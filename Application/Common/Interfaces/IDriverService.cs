@@ -4,6 +4,6 @@ namespace Application.Common.Interfaces
 {
     public interface IDriverService
     {
-        Task<RegisterDriverWithPackageResponse> RegisterDriverWithPackageAsync(string userId, string preferredPaymentMethod, int packageId);
+        Task<RegisterDriverResponse> RegisterDriverAsync(string userId, string preferredPaymentMethod);
     }
 }

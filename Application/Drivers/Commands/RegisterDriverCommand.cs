@@ -3,10 +3,9 @@ using MediatR;
 
 namespace Application.Drivers.Commands
 {
-    public class RegisterDriverWithPackageCommand : IRequest<RegisterDriverWithPackageResponse>
+    public class RegisterDriverCommand : IRequest<RegisterDriverResponse>
     {
         public string UserId { get; set; }
         public string PreferredPaymentMethod { get; set; }
-        public int PackageId { get; set; }
     }
 }

@@ -17,8 +17,8 @@ namespace EVSwapping.Controllers
             _mediator = mediator;
         }
 
-        [HttpPost("register-service")]
-        public async Task<IActionResult> RegisterService([FromBody] RegisterDriverWithPackageCommand command)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDriverCommand command)
         {
             try
             {
