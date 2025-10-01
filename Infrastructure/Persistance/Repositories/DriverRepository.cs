@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.Repositories
 {
-    public class DriverRepository //: IDriverRepository
+    public class DriverRepository 
     {
         private readonly EVSwappingV2Context _context;
 
