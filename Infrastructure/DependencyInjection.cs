@@ -1,5 +1,6 @@
 ﻿using Application.Common.Interfaces;
 using Domain.Models;
+using Infrastructure.Persistance.Repositories;
 using Infrastructure.Services;
 using Infrastructure.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -55,6 +56,11 @@ namespace Infrastructure
             services.AddScoped<EmailService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ISupportTicketService, SupportTicketService>();
+            services.AddScoped<IRatingService, RatingService>();
+
+            services.AddScoped<SupportTicketRepository>();
+            services.AddScoped<RatingRepository>();
             return services;
         }
     }
