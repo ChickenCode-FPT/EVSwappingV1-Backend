@@ -1,37 +1,34 @@
-﻿using Application.SubscriptionPackages.Commands;
-using Application.SubscriptionPackages.Queries;
-using Domain.Dtos;
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
+﻿using Application.Common.Interfaces.Services;
+using Application.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EVSwapping.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class SubscriptionPackageController : ControllerBase
     {
-        private readonly IMediator _mediator;
+        private readonly ISubscriptionPackageService _packageService;
 
-        public SubscriptionPackageController(IMediator mediator)
+        public SubscriptionPackageController(ISubscriptionPackageService packageService)
         {
-            _mediator = mediator;
+            _packageService = packageService;
         }
 
         [HttpGet("all")]
         public async Task<IActionResult> GetAllPackages()
         {
-            var result = await _mediator.Send(new GetAllPackagesQuery());
+            var result = await _packageService.GetAllAsync();
             return Ok(result);
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] CreatePackageCommand command)
+        public async Task<IActionResult> Create([FromBody] CreatePackageRequest request)
         {
             try
             {
-                var result = await _mediator.Send(command);
+                var result = await _packageService.CreateAsync(request);
                 return Ok(result);
             }
             catch (Exception ex)

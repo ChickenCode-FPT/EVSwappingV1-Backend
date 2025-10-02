@@ -1,14 +1,9 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.Interfaces.Services;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Users.Commands.Password
 {
-    public class ForgotPasswordHandler : IRequestHandler<ForgotPasswordCommand , Unit>
+    public class ForgotPasswordHandler : IRequestHandler<ForgotPasswordCommand, Unit>
     {
         private readonly IAuthService _authService;
 

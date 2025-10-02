@@ -1,7 +1,5 @@
-﻿using Application.Common.Interfaces;
-using Application.Subscriptions.Commands;
-using Domain.Dtos;
-using MediatR;
+﻿using Application.Common.Interfaces.Services;
+using Application.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,21 +10,19 @@ namespace EVSwapping.Controllers
     [Route("api/[controller]")]
     public class SubscriptionController : ControllerBase
     {
-        private readonly IMediator _mediator;
         private readonly ISubscriptionService _subscriptionService;
 
-        public SubscriptionController(IMediator mediator, ISubscriptionService subscriptionService)
+        public SubscriptionController(ISubscriptionService subscriptionService)
         {
-            _mediator = mediator;
             _subscriptionService = subscriptionService;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterSubscriptionCommand command)
+        public async Task<IActionResult> Register([FromBody] RegisterSubscriptionRequest request)
         {
             try
             {
-                var result = await _mediator.Send(command);
+                var result = await _subscriptionService.RegisterSubscriptionAsync(request);
                 return Ok(result);
             }
             catch (Exception ex)

@@ -1,5 +1,5 @@
-﻿using Application.Drivers.Commands;
-using MediatR;
+﻿using Application.Common.Interfaces.Services;
+using Application.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,19 +10,19 @@ namespace EVSwapping.Controllers
     [Route("api/[controller]")]
     public class DriverController : ControllerBase
     {
-        private readonly IMediator _mediator;
+        private readonly IDriverService _driverService;
 
-        public DriverController(IMediator mediator)
+        public DriverController(IDriverService driverService)
         {
-            _mediator = mediator;
+            _driverService = driverService;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDriverCommand command)
+        public async Task<IActionResult> Register([FromBody] RegisterDriverRequest request)
         {
             try
             {
-                var result = await _mediator.Send(command);
+                var result = await _driverService.RegisterDriverAsync(request);
                 return Ok(result);
             }
             catch (Exception ex)

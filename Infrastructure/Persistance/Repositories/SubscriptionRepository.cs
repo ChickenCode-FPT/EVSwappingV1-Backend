@@ -1,14 +1,10 @@
-﻿using Domain.Models;
+﻿using Application.Common.Interfaces.Repositories;
+using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.Repositories
 {
-    public class SubscriptionRepository //: ISubscriptionRepository
+    public class SubscriptionRepository : ISubscriptionRepository
     {
         private readonly EVSwappingV2Context _context;
 

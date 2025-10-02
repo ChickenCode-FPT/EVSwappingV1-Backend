@@ -1,6 +1,6 @@
 ﻿using Domain.Dtos;
 
-namespace Application.Common.Interfaces
+namespace Application.Common.Interfaces.Services
 {
     public interface IUserService
     {

@@ -17,7 +17,7 @@ namespace EVSwapping.Controllers
         {
             _mediator = mediator;
         }
-        
+
         [HttpGet("all")]
         public async Task<IActionResult> GetAllUsers()
         {

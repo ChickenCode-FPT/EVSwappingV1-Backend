@@ -1,9 +1,6 @@
-﻿using Domain.Dtos;
-using MediatR;
-
-namespace Application.SubscriptionPackages.Commands
+﻿namespace Application.Dtos
 {
-    public class CreatePackageCommand : IRequest<SubscriptionPackageDto>
+    public class CreatePackageRequest
     {
         public string Name { get; set; }
         public string BillingCycle { get; set; }
