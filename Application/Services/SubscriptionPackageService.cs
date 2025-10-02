@@ -17,17 +17,17 @@ namespace Application.Services
             _mapper = mapper;
         }
 
-        public async Task<List<SubscriptionPackageDto>> GetAllAsync()
+        public async Task<List<SubscriptionPackageDto>> GetAll()
         {
-            var packages = await _packageRepository.GetAllAsync();
+            var packages = await _packageRepository.GetAll();
             return _mapper.Map<List<SubscriptionPackageDto>>(packages);
         }
 
-        public async Task<SubscriptionPackageDto> CreateAsync(CreatePackageRequest request)
+        public async Task<SubscriptionPackageDto> Create(CreatePackageRequest request)
         {
             var entity = _mapper.Map<SubscriptionPackage>(request);
 
-            await _packageRepository.AddAsync(entity);
+            await _packageRepository.Add(entity);
 
             return _mapper.Map<SubscriptionPackageDto>(entity);
         }

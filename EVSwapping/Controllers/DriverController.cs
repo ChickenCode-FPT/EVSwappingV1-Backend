@@ -22,7 +22,7 @@ namespace EVSwapping.Controllers
         {
             try
             {
-                var result = await _driverService.RegisterDriverAsync(request);
+                var result = await _driverService.RegisterDriver(request);
                 return Ok(result);
             }
             catch (Exception ex)

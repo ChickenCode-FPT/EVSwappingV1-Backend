@@ -25,6 +25,16 @@ namespace Application.Mappings
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
 
             CreateMap<SubscriptionPackage, SubscriptionPackageDto>();
+
+            CreateMap<Station, StationDto>()
+                .ForMember(dest => dest.AvailableBatteries, opt => opt.Ignore());
+
+            CreateMap<Battery, BatteryDto>();
+
+            CreateMap<Reservation, ReservationDto>();
+
+            CreateMap<Vehicle, VehicleDto>().ReverseMap();
+
         }
     }
 }

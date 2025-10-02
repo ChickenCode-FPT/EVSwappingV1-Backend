@@ -17,11 +17,11 @@ namespace Application.Services
             _mapper = mapper;
         }
 
-        public async Task<RegisterDriverResponse> RegisterDriverAsync(RegisterDriverRequest request)
+        public async Task<RegisterDriverResponse> RegisterDriver(RegisterDriverRequest request)
         {
             var driver = _mapper.Map<Driver>(request);
 
-            var savedDriver = await _driverRepository.AddAsync(driver);
+            var savedDriver = await _driverRepository.Add(driver);
 
             return _mapper.Map<RegisterDriverResponse>(savedDriver);
         }

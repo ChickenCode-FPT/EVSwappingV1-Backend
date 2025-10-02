@@ -58,6 +58,11 @@ namespace Infrastructure
             services.AddScoped<IDriverRepository, DriverRepository>();
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
             services.AddScoped<ISubscriptionPackageRepository, SubscriptionPackageRepository>();
+            services.AddScoped<IBatteryRepository, BatteryRepository>();
+            services.AddScoped<IStationRepository, StationRepository>();
+            services.AddScoped<IStationInventoryRepository, StationInventoryRepository>();
+            services.AddScoped<IReservationRepository, ReservationRepository>();
+            services.AddScoped<IVehicleRepository, VehicleRepository>();
 
             return services;
         }

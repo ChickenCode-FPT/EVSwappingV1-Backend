@@ -13,17 +13,17 @@ namespace Infrastructure.Persistance.Repositories
             _context = context;
         }
 
-        public async Task<List<SubscriptionPackage>> GetAllAsync()
+        public async Task<List<SubscriptionPackage>> GetAll()
         {
             return await _context.SubscriptionPackages.ToListAsync();
         }
 
-        public async Task<SubscriptionPackage?> GetByIdAsync(int packageId)
+        public async Task<SubscriptionPackage?> GetById(int packageId)
         {
             return await _context.SubscriptionPackages.FirstOrDefaultAsync(p => p.PackageId == packageId);
         }
 
-        public async Task<SubscriptionPackage> AddAsync(SubscriptionPackage package)
+        public async Task<SubscriptionPackage> Add(SubscriptionPackage package)
         {
             _context.SubscriptionPackages.Add(package);
             await _context.SaveChangesAsync();

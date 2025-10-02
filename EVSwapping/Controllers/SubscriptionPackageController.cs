@@ -19,7 +19,7 @@ namespace EVSwapping.Controllers
         [HttpGet("all")]
         public async Task<IActionResult> GetAllPackages()
         {
-            var result = await _packageService.GetAllAsync();
+            var result = await _packageService.GetAll();
             return Ok(result);
         }
 
@@ -28,7 +28,7 @@ namespace EVSwapping.Controllers
         {
             try
             {
-                var result = await _packageService.CreateAsync(request);
+                var result = await _packageService.Create(request);
                 return Ok(result);
             }
             catch (Exception ex)

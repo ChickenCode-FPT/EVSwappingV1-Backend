@@ -12,19 +12,19 @@ namespace Infrastructure.Persistance.Repositories
             _context = context;
         }
 
-        public async Task<Payment> AddAsync(Payment payment)
+        public async Task<Payment> Add(Payment payment)
         {
             _context.Payments.Add(payment);
             await _context.SaveChangesAsync();
             return payment;
         }
 
-        public async Task<Payment?> GetByIdAsync(long paymentId)
+        public async Task<Payment?> GetById(long paymentId)
         {
             return await _context.Payments.FirstOrDefaultAsync(p => p.PaymentId == paymentId);
         }
 
-        public async Task UpdateAsync(Payment payment)
+        public async Task Update(Payment payment)
         {
             _context.Payments.Update(payment);
             await _context.SaveChangesAsync();

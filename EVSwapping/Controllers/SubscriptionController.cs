@@ -22,7 +22,7 @@ namespace EVSwapping.Controllers
         {
             try
             {
-                var result = await _subscriptionService.RegisterSubscriptionAsync(request);
+                var result = await _subscriptionService.RegisterSubscription(request);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -34,7 +34,7 @@ namespace EVSwapping.Controllers
         [HttpGet("packages")]
         public async Task<IActionResult> GetPackages()
         {
-            var packages = await _subscriptionService.GetAllPackagesAsync();
+            var packages = await _subscriptionService.GetAllPackages();
             return Ok(packages);
         }
     }

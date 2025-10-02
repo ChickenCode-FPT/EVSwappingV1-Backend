@@ -4,7 +4,7 @@ namespace Application.Common.Interfaces.Repositories
 {
     public interface IDriverRepository
     {
-        Task<Driver?> GetByUserIdAsync(string userId);
-        Task<Driver> AddAsync(Driver driver);
+        Task<Driver?> GetByUserId(string userId);
+        Task<Driver> Add(Driver driver);
     }
 }

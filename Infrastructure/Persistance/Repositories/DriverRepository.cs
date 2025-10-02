@@ -13,12 +13,12 @@ namespace Infrastructure.Persistance.Repositories
             _context = context;
         }
 
-        public async Task<Driver?> GetByUserIdAsync(string userId)
+        public async Task<Driver?> GetByUserId(string userId)
         {
             return await _context.Drivers.FirstOrDefaultAsync(d => d.UserId == userId);
         }
 
-        public async Task<Driver> AddAsync(Driver driver)
+        public async Task<Driver> Add(Driver driver)
         {
             _context.Drivers.Add(driver);
             await _context.SaveChangesAsync();

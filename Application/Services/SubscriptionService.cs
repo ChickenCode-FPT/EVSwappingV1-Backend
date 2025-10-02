@@ -22,16 +22,16 @@ namespace Application.Services
             _mapper = mapper;
         }
 
-        public async Task<RegisterSubscriptionResponse> RegisterSubscriptionAsync(RegisterSubscriptionRequest request)
+        public async Task<RegisterSubscriptionResponse> RegisterSubscription(RegisterSubscriptionRequest request)
         {
-            var package = await _packageRepository.GetByIdAsync(request.PackageId);
+            var package = await _packageRepository.GetById(request.PackageId);
             if (package == null)
                 throw new Exception("Package not found");
 
             var subscription = _mapper.Map<Subscription>(request);
             subscription.RemainingSwaps = package.IncludedSwaps;
 
-            var saved = await _subscriptionRepository.AddAsync(subscription);
+            var saved = await _subscriptionRepository.Add(subscription);
 
             var response = _mapper.Map<RegisterSubscriptionResponse>(saved);
             response.PackageName = package.Name;
@@ -41,9 +41,9 @@ namespace Application.Services
             return response;
         }
 
-        public async Task<List<SubscriptionPackageDto>> GetAllPackagesAsync()
+        public async Task<List<SubscriptionPackageDto>> GetAllPackages()
         {
-            var packages = await _packageRepository.GetAllAsync();
+            var packages = await _packageRepository.GetAll();
             return _mapper.Map<List<SubscriptionPackageDto>>(packages);
         }
     }

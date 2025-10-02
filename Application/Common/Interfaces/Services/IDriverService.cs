@@ -4,6 +4,6 @@ namespace Application.Common.Interfaces.Services
 {
     public interface IDriverService
     {
-        Task<RegisterDriverResponse> RegisterDriverAsync(RegisterDriverRequest request);
+        Task<RegisterDriverResponse> RegisterDriver(RegisterDriverRequest request);
     }
 }
