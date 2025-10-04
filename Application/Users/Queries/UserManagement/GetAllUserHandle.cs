@@ -1,11 +1,6 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.Interfaces.Services;
 using Domain.Dtos;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Users.Queries.UserManagement
 {
@@ -26,7 +21,7 @@ namespace Application.Users.Queries.UserManagement
             catch (Exception ex)
             {
                 var msg = ex.Message;
-                return new List<UserDto>(); 
+                return new List<UserDto>();
             }
         }
     }

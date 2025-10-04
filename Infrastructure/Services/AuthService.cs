@@ -1,21 +1,16 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.Interfaces.Services;
 using Domain.Dtos;
 using Domain.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Services
 {
@@ -125,7 +120,7 @@ namespace Infrastructure.Services
                     throw new Exception(errors);
                 }
 
-                await _userManager.AddToRoleAsync(user, "User"); 
+                await _userManager.AddToRoleAsync(user, "User");
             }
 
             var token = await GenerateJwtToken(user);
@@ -232,7 +227,7 @@ namespace Infrastructure.Services
                 throw new Exception("User not found.");
 
             user.PhoneNumber = phoneNumber;
-            
+
             var jwtToken = await GenerateJwtToken(user);
 
             var refreshToken = GenerateRefreshToken();

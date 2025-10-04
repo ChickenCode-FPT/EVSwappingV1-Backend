@@ -1,20 +1,16 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.Interfaces.Repositories;
+using Application.Common.Interfaces.Services;
 using Domain.Models;
 using Infrastructure.Persistance.Repositories;
 using Infrastructure.Services;
-using Infrastructure.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure
 {
@@ -54,13 +50,20 @@ namespace Infrastructure
             });
 
             services.AddScoped<EmailService>();
+            services.AddScoped<PaymentRepository>();
+
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<ISupportTicketService, SupportTicketService>();
-            services.AddScoped<IRatingService, RatingService>();
 
-            services.AddScoped<SupportTicketRepository>();
-            services.AddScoped<RatingRepository>();
+            services.AddScoped<IDriverRepository, DriverRepository>();
+            services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+            services.AddScoped<ISubscriptionPackageRepository, SubscriptionPackageRepository>();
+            services.AddScoped<IBatteryRepository, BatteryRepository>();
+            services.AddScoped<IStationRepository, StationRepository>();
+            services.AddScoped<IStationInventoryRepository, StationInventoryRepository>();
+            services.AddScoped<IReservationRepository, ReservationRepository>();
+            services.AddScoped<IVehicleRepository, VehicleRepository>();
+
             return services;
         }
     }

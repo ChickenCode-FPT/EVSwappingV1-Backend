@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EVSwapping.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -17,7 +17,7 @@ namespace EVSwapping.Controllers
         {
             _mediator = mediator;
         }
-        
+
         [HttpGet("all")]
         public async Task<IActionResult> GetAllUsers()
         {
