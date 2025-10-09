@@ -2,9 +2,9 @@
 {
     public class RegisterDriverResponse
     {
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
         public int DriverId { get; set; }
-        public string PreferredPaymentMethod { get; set; }
+        public string PreferredPaymentMethod { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
     }
 }

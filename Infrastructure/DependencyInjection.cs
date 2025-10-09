@@ -44,7 +44,7 @@ namespace Infrastructure
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = jwtIssuer,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? "")),
                     RoleClaimType = ClaimTypes.Role
                 };
             });
@@ -63,6 +63,8 @@ namespace Infrastructure
             services.AddScoped<IStationInventoryRepository, StationInventoryRepository>();
             services.AddScoped<IReservationRepository, ReservationRepository>();
             services.AddScoped<IVehicleRepository, VehicleRepository>();
+            services.AddScoped<IRatingRepository, RatingRepository>();
+            services.AddScoped<ISupportTicketRepository, SupportTicketRepository>();
 
             return services;
         }

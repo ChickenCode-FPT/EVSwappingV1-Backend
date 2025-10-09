@@ -2,7 +2,7 @@
 {
     public class CreateReservationRequest
     {
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
         public int StationId { get; set; }
         public int? VehicleId { get; set; }
         public DateTime ReservedFrom { get; set; }

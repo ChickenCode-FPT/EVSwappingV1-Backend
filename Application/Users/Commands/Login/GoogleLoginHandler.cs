@@ -34,11 +34,13 @@ namespace Application.Users.Commands.Login
             var claims = result.Principal.Claims.ToList();
             var email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             var name = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-            var googleUserId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var googleUserId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "";
 
             if (string.IsNullOrEmpty(email))
                 throw new Exception("Email claim not found from Google.");
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
             bool isNewUser = false;
+#pragma warning restore CS0219 // Variable is assigned but its value is never used
 
             // Find or create user
             var user = await _userManager.FindByEmailAsync(email);
@@ -87,8 +89,8 @@ namespace Application.Users.Commands.Login
                 Token = jwtToken,
                 RefreshToken = refreshToken,
                 RefreshTokenExpiry = user.RefreshTokenExpiryTime,
-                FullName = user.FullName,
-                Email = user.Email,
+                FullName = user.FullName ?? "",
+                Email = user.Email ?? "",
                 Roles = (await _userManager.GetRolesAsync(user)).ToList(),
                 RequirePhone = string.IsNullOrEmpty(user.PhoneNumber)
             };

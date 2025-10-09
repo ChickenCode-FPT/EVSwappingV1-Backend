@@ -35,6 +35,13 @@ namespace Application.Mappings
 
             CreateMap<Vehicle, VehicleDto>().ReverseMap();
 
+            CreateMap<RatingCreateRequest, Rating>()
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
+
+            CreateMap<Rating, RatingDto>().ReverseMap();
+
+            CreateMap<SupportTicket, SupportTicketDto>().ReverseMap();
+
         }
     }
 }
