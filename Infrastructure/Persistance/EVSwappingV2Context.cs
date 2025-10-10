@@ -36,6 +36,8 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
 
     public virtual DbSet<Reservation> Reservations { get; set; }
 
+    public virtual DbSet<ReservationAllocation> ReservationAllocations { get; set; }
+
     public virtual DbSet<Station> Stations { get; set; }
 
     public virtual DbSet<StationInventory> StationInventories { get; set; }
@@ -229,7 +231,12 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
         {
             entity.HasKey(e => e.ReservationId).HasName("PK__Reservat__B7EE5F2409167646");
 
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(sysutcdatetime())");
+
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(sysutcdatetime())"); 
+
             entity.Property(e => e.Status)
                 .IsRequired()
                 .HasMaxLength(50)
@@ -297,6 +304,33 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
                 .HasForeignKey(d => d.StationId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__StationIn__Stati__60A75C0F");
+
+            entity.HasOne(e => e.Reservation)
+                .WithMany()
+                .HasForeignKey(e => e.ReservationId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<ReservationAllocation>(entity =>
+        {
+            entity.ToTable("ReservationAllocations"); 
+            entity.HasKey(e => e.ReservationAllocationId);
+
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.HasOne(e => e.Reservation)
+                .WithMany(r => r.ReservationAllocations)
+                .HasForeignKey(e => e.ReservationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Battery)
+                .WithMany(b => b.ReservationAllocations)
+                .HasForeignKey(e => e.BatteryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.BatteryId, e.Status });
         });
 
         modelBuilder.Entity<StationStaff>(entity =>

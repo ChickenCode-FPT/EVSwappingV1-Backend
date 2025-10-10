@@ -1,7 +1,6 @@
 ﻿using Application.Users.Commands.LockUser;
 using Application.Users.Queries.UserManagement;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EVSwapping.Controllers

@@ -1,6 +1,7 @@
 ﻿using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
 using Domain.Models;
+using Infrastructure.Jobs;
 using Infrastructure.Persistance.Repositories;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Quartz;
 using System.Security.Claims;
 using System.Text;
 
@@ -49,6 +51,30 @@ namespace Infrastructure
                 };
             });
 
+            services.AddHttpClient<IOSRMService, OSRMService>(client =>
+            {
+                client.BaseAddress = new Uri("http://127.0.0.1:5000"); 
+            });
+
+            services.AddQuartz(q =>
+            {
+                var reservationJobKey = new JobKey("ReservationStatusUpdaterJob");
+                q.AddJob<ReservationStatusUpdaterJob>(opts => opts.WithIdentity(reservationJobKey));
+                q.AddTrigger(opts => opts
+                    .ForJob(reservationJobKey)
+                    .WithIdentity("ReservationStatusUpdaterJob-trigger")
+                    .WithCronSchedule("0 */1 * * * ?")); // 10
+
+                var releaseJobKey = new JobKey("ExpiredReservationReleaseJob");
+                q.AddJob<ExpiredReservationReleaseJob>(opts => opts.WithIdentity(releaseJobKey));
+                q.AddTrigger(opts => opts
+                    .ForJob(releaseJobKey)
+                    .WithIdentity("ExpiredReservationReleaseJob-trigger")
+                    .WithCronSchedule("0 */1 * * * ?"));  // 5
+            });
+
+            services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true);
+
             services.AddScoped<EmailService>();
             services.AddScoped<PaymentRepository>();
 
@@ -63,6 +89,8 @@ namespace Infrastructure
             services.AddScoped<IStationInventoryRepository, StationInventoryRepository>();
             services.AddScoped<IReservationRepository, ReservationRepository>();
             services.AddScoped<IVehicleRepository, VehicleRepository>();
+            services.AddScoped<ISwapTransactionRepository, SwapTransactionRepository>();
+            services.AddScoped<IReservationAllocationRepository, ReservationAllocationRepository>();
 
             return services;
         }

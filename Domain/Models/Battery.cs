@@ -34,4 +34,5 @@ public partial class Battery
     public virtual ICollection<SwapTransaction> SwapTransactionIncomingBatteries { get; set; } = new List<SwapTransaction>();
 
     public virtual ICollection<SwapTransaction> SwapTransactionOutgoingBatteries { get; set; } = new List<SwapTransaction>();
+    public virtual ICollection<ReservationAllocation> ReservationAllocations { get; set; } = new List<ReservationAllocation>();
 }

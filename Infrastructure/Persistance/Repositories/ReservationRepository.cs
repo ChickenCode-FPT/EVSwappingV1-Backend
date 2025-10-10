@@ -1,7 +1,7 @@
 ﻿using Application.Common.Interfaces.Repositories;
+using Domain.Enums;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace Infrastructure.Persistance.Repositories
 {
@@ -17,24 +17,24 @@ namespace Infrastructure.Persistance.Repositories
         public async Task<Reservation?> GetById(int reservationId)
         {
             return await _context.Reservations
-                          .Include(r => r.Station)
-                          .Include(r => r.User)
-                          .FirstOrDefaultAsync(r => r.ReservationId == reservationId);
+                .Include(r => r.Station)
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.ReservationId == reservationId);
         }
 
         public async Task<IEnumerable<Reservation>> GetByUserId(string userId)
         {
             return await _context.Reservations
-                          .Include(r => r.Station)
-                          .Where(r => r.UserId == userId)
-                          .ToListAsync();
+                .Include(r => r.Station)
+                .Where(r => r.UserId == userId)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<Reservation>> GetByStationId(int stationId)
         {
             return await _context.Reservations
-                          .Where(r => r.StationId == stationId)
-                          .ToListAsync();
+                .Where(r => r.StationId == stationId)
+                .ToListAsync();
         }
 
         public async Task Add(Reservation reservation)
@@ -54,10 +54,31 @@ namespace Infrastructure.Persistance.Repositories
             var res = await _context.Reservations.FindAsync(reservationId);
             if (res != null)
             {
-                res.Status = "Cancelled";
+                res.Status = ReservationStatus.Cancelled;
+                res.UpdatedAt = DateTime.UtcNow;
                 _context.Reservations.Update(res);
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<IEnumerable<Reservation>> GetPendingReservations()
+        {
+            return await _context.Reservations
+                .Where(r => r.Status == ReservationStatus.Pending)
+                .ToListAsync();
+        }
+
+        public async Task UpdateStatus(int reservationId, string newStatus)
+        {
+            var res = await _context.Reservations.FindAsync(reservationId);
+            if (res != null)
+            {
+                res.Status = newStatus;
+                res.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task SaveChanges() => await _context.SaveChangesAsync();
     }
 }

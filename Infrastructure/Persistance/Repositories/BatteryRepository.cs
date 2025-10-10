@@ -1,7 +1,7 @@
 ﻿using Application.Common.Interfaces.Repositories;
+using Domain.Enums;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace Infrastructure.Persistance.Repositories
 {
@@ -21,7 +21,7 @@ namespace Infrastructure.Persistance.Repositories
 
         public async Task<IEnumerable<Battery>> GetAvailableBatteries(int? batteryModelId = null)
         {
-            var query = _context.Batteries.Where(b => b.Status == "Available");
+            var query = _context.Batteries.Where(b => b.Status == BatteryStatus.Full);
 
             if (batteryModelId.HasValue)
                 query = query.Where(b => b.BatteryModelId == batteryModelId.Value);

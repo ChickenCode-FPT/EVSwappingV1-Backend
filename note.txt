@@ -1,0 +1,3 @@
+dotnet ef migrations add ali5 --project . --startup-project ../EVSwapping
+
+dotnet ef database update -p Infrastructure -s EVSwapping

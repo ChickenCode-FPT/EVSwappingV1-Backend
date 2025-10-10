@@ -1,7 +1,7 @@
 ﻿using Application.Common.Interfaces.Repositories;
 using Domain.Models;
+using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace Infrastructure.Persistance.Repositories
 {
@@ -16,19 +16,26 @@ namespace Infrastructure.Persistance.Repositories
 
         public async Task<Station?> GetById(int stationId)
         {
-            return await _context.Stations.FindAsync(stationId);
+            return await _context.Stations
+                .Include(s => s.StationInventories)
+                .FirstOrDefaultAsync(s => s.StationId == stationId);
         }
 
         public async Task<IEnumerable<Station>> GetAll()
         {
-            return await _context.Stations.ToListAsync();
+            return await _context.Stations
+                .Include(s => s.StationInventories)
+                .ToListAsync();
         }
 
-        public async Task<IEnumerable<Station>> GetNearbyStations(decimal latitude, decimal longitude, double radiusKm)
+        public async Task<int> CountAvailableBatteries(int stationId)
         {
-            return await _context.Stations
-                .Where(s => s.Latitude != null && s.Longitude != null)
-                .ToListAsync();
+            return await _context.StationInventories
+                .Include(i => i.Battery)
+                .CountAsync(i =>
+                    i.StationId == stationId &&
+                    i.Status == StationInventoryStatus.Full &&
+                    i.Battery.Status == BatteryStatus.Full);
         }
 
         public async Task Add(Station station)

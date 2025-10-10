@@ -10,5 +10,6 @@
         public DateTime ReservedTo { get; set; }
         public string Status { get; set; }
         public int? ReservedBatteryModelId { get; set; }
+        public ReservationAllocationDto? Allocation { get; set; }
     }
 }

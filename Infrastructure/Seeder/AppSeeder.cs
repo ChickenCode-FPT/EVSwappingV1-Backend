@@ -1,7 +1,6 @@
 ﻿using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Infrastructure.Seeder
 {

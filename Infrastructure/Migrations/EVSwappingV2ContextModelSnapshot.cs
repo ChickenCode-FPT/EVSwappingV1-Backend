@@ -413,6 +413,11 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasDefaultValue("Pending");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("(sysutcdatetime())");
+
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
@@ -431,6 +436,40 @@ namespace Infrastructure.Migrations
                     b.HasIndex("VehicleId");
 
                     b.ToTable("Reservations");
+                });
+
+            modelBuilder.Entity("Domain.Models.ReservationAllocation", b =>
+                {
+                    b.Property<long>("ReservationAllocationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ReservationAllocationId"));
+
+                    b.Property<DateTime>("AllocatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("BatteryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("HoldUntil")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ReservationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("ReservationAllocationId");
+
+                    b.HasIndex("ReservationId");
+
+                    b.HasIndex("BatteryId", "Status");
+
+                    b.ToTable("ReservationAllocations", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Models.Station", b =>
@@ -504,6 +543,9 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime?>("CheckedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ReservationId")
+                        .HasColumnType("int");
+
                     b.Property<string>("SlotNumber")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -522,6 +564,8 @@ namespace Infrastructure.Migrations
                         .HasName("PK__StationI__92D37BC1DE21EA05");
 
                     b.HasIndex("BatteryId");
+
+                    b.HasIndex("ReservationId");
 
                     b.HasIndex(new[] { "StationId", "BatteryId" }, "UQ__StationI__15A9AEB95AF9C628")
                         .IsUnique();
@@ -1174,6 +1218,25 @@ namespace Infrastructure.Migrations
                     b.Navigation("Vehicle");
                 });
 
+            modelBuilder.Entity("Domain.Models.ReservationAllocation", b =>
+                {
+                    b.HasOne("Domain.Models.Battery", "Battery")
+                        .WithMany("ReservationAllocations")
+                        .HasForeignKey("BatteryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.Reservation", "Reservation")
+                        .WithMany("ReservationAllocations")
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Battery");
+
+                    b.Navigation("Reservation");
+                });
+
             modelBuilder.Entity("Domain.Models.StationInventory", b =>
                 {
                     b.HasOne("Domain.Models.Battery", "Battery")
@@ -1182,6 +1245,11 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("FK__StationIn__Batte__619B8048");
 
+                    b.HasOne("Domain.Models.Reservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Domain.Models.Station", "Station")
                         .WithMany("StationInventories")
                         .HasForeignKey("StationId")
@@ -1189,6 +1257,8 @@ namespace Infrastructure.Migrations
                         .HasConstraintName("FK__StationIn__Stati__60A75C0F");
 
                     b.Navigation("Battery");
+
+                    b.Navigation("Reservation");
 
                     b.Navigation("Station");
                 });
@@ -1366,6 +1436,8 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("InterStationTransfers");
 
+                    b.Navigation("ReservationAllocations");
+
                     b.Navigation("StationInventories");
 
                     b.Navigation("SwapTransactionIncomingBatteries");
@@ -1384,6 +1456,8 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Models.Reservation", b =>
                 {
+                    b.Navigation("ReservationAllocations");
+
                     b.Navigation("SwapTransactions");
                 });
 

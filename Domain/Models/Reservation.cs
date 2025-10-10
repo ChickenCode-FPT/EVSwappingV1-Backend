@@ -24,7 +24,7 @@ public partial class Reservation
     public int? ReservedBatteryModelId { get; set; }
 
     public DateTime CreatedAt { get; set; }
-
+    public DateTime? UpdatedAt { get; set; }
     public virtual BatteryModel ReservedBatteryModel { get; set; }
 
     public virtual Station Station { get; set; }
@@ -34,4 +34,5 @@ public partial class Reservation
     public virtual User User { get; set; }
 
     public virtual Vehicle Vehicle { get; set; }
+    public virtual ICollection<ReservationAllocation> ReservationAllocations { get; set; } = new List<ReservationAllocation>();
 }

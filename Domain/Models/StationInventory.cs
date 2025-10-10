@@ -22,4 +22,8 @@ public partial class StationInventory
     public virtual Battery Battery { get; set; }
 
     public virtual Station Station { get; set; }
+
+    public int? ReservationId { get; set; }   
+
+    public virtual Reservation? Reservation { get; set; }
 }

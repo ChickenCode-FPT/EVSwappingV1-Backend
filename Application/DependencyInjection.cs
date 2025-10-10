@@ -1,5 +1,4 @@
-﻿using Application.Common.Interfaces.Repositories;
-using Application.Common.Interfaces.Services;
+﻿using Application.Common.Interfaces.Services;
 using Application.Mappings;
 using Application.Services;
 using Microsoft.Extensions.DependencyInjection;

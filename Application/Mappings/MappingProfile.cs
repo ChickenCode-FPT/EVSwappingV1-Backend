@@ -1,6 +1,7 @@
 ﻿using Application.Dtos;
 using AutoMapper;
 using Domain.Models;
+using Domain.Enums;
 
 namespace Application.Mappings
 {
@@ -31,10 +32,11 @@ namespace Application.Mappings
 
             CreateMap<Battery, BatteryDto>();
 
-            CreateMap<Reservation, ReservationDto>();
+            CreateMap<Reservation, ReservationDto>().ReverseMap();
+
+            CreateMap<ReservationAllocation, ReservationAllocationDto>().ReverseMap();
 
             CreateMap<Vehicle, VehicleDto>().ReverseMap();
-
         }
     }
 }
