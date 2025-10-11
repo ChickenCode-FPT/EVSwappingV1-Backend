@@ -16,7 +16,6 @@ namespace EVSwapping.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ReservationDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateReservation([FromBody] CreateReservationRequest request)
         {
             var reservation = await _reservationService.CreateReservation(request);
@@ -24,7 +23,6 @@ namespace EVSwapping.Controllers
         }
 
         [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> CancelReservation(int id, [FromQuery] string userId)
         {
             await _reservationService.CancelReservation(new CancelReservationRequest
@@ -37,7 +35,6 @@ namespace EVSwapping.Controllers
         }
 
         [HttpGet("user/{userId}")]
-        [ProducesResponseType(typeof(IEnumerable<ReservationDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetByUser(string userId)
         {
             var reservations = await _reservationService.GetReservationsByUser(userId);

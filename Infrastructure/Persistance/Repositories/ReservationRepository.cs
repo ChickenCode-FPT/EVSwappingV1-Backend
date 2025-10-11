@@ -17,6 +17,8 @@ namespace Infrastructure.Persistance.Repositories
         public async Task<Reservation?> GetById(int reservationId)
         {
             return await _context.Reservations
+                .Include(r => r.ReservationAllocations)
+                .ThenInclude(a => a.Battery)
                 .Include(r => r.Station)
                 .Include(r => r.User)
                 .FirstOrDefaultAsync(r => r.ReservationId == reservationId);
@@ -25,6 +27,8 @@ namespace Infrastructure.Persistance.Repositories
         public async Task<IEnumerable<Reservation>> GetByUserId(string userId)
         {
             return await _context.Reservations
+                .Include(r => r.ReservationAllocations)
+                .ThenInclude(a => a.Battery)
                 .Include(r => r.Station)
                 .Where(r => r.UserId == userId)
                 .ToListAsync();

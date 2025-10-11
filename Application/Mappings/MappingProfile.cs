@@ -32,7 +32,10 @@ namespace Application.Mappings
 
             CreateMap<Battery, BatteryDto>();
 
-            CreateMap<Reservation, ReservationDto>().ReverseMap();
+            CreateMap<Reservation, ReservationDto>()
+                .ForMember(dest => dest.Allocation,
+                    opt => opt.MapFrom(src => src.ReservationAllocations.FirstOrDefault()))
+                .ReverseMap();
 
             CreateMap<ReservationAllocation, ReservationAllocationDto>().ReverseMap();
 
