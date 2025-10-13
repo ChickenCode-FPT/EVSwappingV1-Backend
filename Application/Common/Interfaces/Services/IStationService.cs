@@ -7,7 +7,8 @@ namespace Application.Common.Interfaces.Services
     {
         Task<StationDto?> GetById(int stationId);
         Task<IEnumerable<StationDto>> GetAll();
-        Task<StationDto?> GetNearestStation(decimal userLng, decimal userLat);
-        Task<OsrmRouteResponse> GetRouteToStation(decimal userLng, decimal userLat, int stationId);
+        Task<StationDto?> GetNearestStation(decimal userLng, decimal userLat, string profile = "car");
+        Task<OsrmRouteResponse> GetRouteToStation(decimal userLng, decimal userLat, int stationId, string profile = "car");
+        Task<IEnumerable<StationDto>> GetAllWithDistanceAsync(decimal userLng, decimal userLat);
     }
 }

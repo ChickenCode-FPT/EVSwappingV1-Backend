@@ -1,11 +1,13 @@
 ﻿using Application.Common.Interfaces.Services;
 using Application.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EVSwapping.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] 
     public class ReservationController : ControllerBase
     {
         private readonly IReservationService _reservationService;
@@ -23,21 +25,20 @@ namespace EVSwapping.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> CancelReservation(int id, [FromQuery] string userId)
+        public async Task<IActionResult> CancelReservation(int id)
         {
             await _reservationService.CancelReservation(new CancelReservationRequest
             {
-                ReservationId = id,
-                UserId = userId
+                ReservationId = id
             });
 
             return NoContent();
         }
 
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetByUser(string userId)
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyReservations()
         {
-            var reservations = await _reservationService.GetReservationsByUser(userId);
+            var reservations = await _reservationService.GetMyReservations();
             return Ok(reservations);
         }
     }

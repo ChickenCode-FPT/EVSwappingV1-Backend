@@ -53,16 +53,13 @@ namespace Application.Services
             return dto;
         }
 
-        public async Task<StationDto?> GetNearestStation(decimal userLng, decimal userLat)
+        public async Task<StationDto?> GetNearestStation(decimal userLng, decimal userLat, string profile = "car")
         {
             var stations = (await _stationRepo.GetAll()).ToList();
             if (!stations.Any()) return null;
 
             var valid = stations
-                .Select((s, idx) => new { s, idx })
-                .Where(x =>
-                    x.s.Longitude.HasValue && x.s.Latitude.HasValue &&
-                    x.s.Longitude.Value != 0m && x.s.Latitude.Value != 0m)
+                .Where(s => s.Longitude.HasValue && s.Latitude.HasValue && s.Longitude != 0 && s.Latitude != 0)
                 .ToList();
 
             if (!valid.Any())
@@ -71,54 +68,86 @@ namespace Application.Services
                 return null;
             }
 
-            var coords = valid.Select(x => (x.s.Longitude!.Value, x.s.Latitude!.Value));
-            var table = await _osrmService.GetTable((userLng, userLat), coords);
+            var start = new CoordinateDto(userLng, userLat);
+            var coords = valid.Select(s => new CoordinateDto(s.Longitude!.Value, s.Latitude!.Value));
 
-            var durations = table.durations?.FirstOrDefault();
-            var distances = table.distances?.FirstOrDefault();
+            var table = await _osrmService.GetTable(start, coords, profile);
 
-            if (durations == null || durations.Length != valid.Count)
-            {
-                _logger.LogDebug("OSRM trả về kích thước durations không hợp lệ, fallback sang distance.");
-                durations = distances;
-            }
+            var durations = table.durations?.FirstOrDefault() ?? table.distances?.FirstOrDefault();
+            if (durations == null) return null;
 
-            if (durations == null)
-                throw new Exception("OSRM /table không có dữ liệu duration/distance.");
+            var bestIdx = Array.IndexOf(durations, durations.Min());
+            var nearest = valid[bestIdx];
 
-            var best = durations
-                .Select((v, i) => new { v, i })
-                .Where(x => !double.IsNaN(x.v) && !double.IsInfinity(x.v))
-                .OrderBy(x => x.v)
-                .FirstOrDefault();
-
-            if (best == null)
-            {
-                _logger.LogDebug("Không tìm thấy giá trị hợp lệ trong bảng OSRM.");
-                return null;
-            }
-
-            var nearest = valid[best.i].s;
             var dto = _mapper.Map<StationDto>(nearest);
             dto.AvailableBatteries = await _inventoryRepo.CountAvailableBatteries(dto.StationId);
 
-            _logger.LogDebug("Nearest station: {Name} (ID={Id}), Index={Idx}, Distance={Dist}m",
-                dto.Name, dto.StationId, best.i, best.v);
+            _logger.LogDebug("Nearest station: {Name} (ID={Id}), Distance={Dist}m", dto.Name, dto.StationId, durations[bestIdx]);
 
             return dto;
         }
 
-        public async Task<OsrmRouteResponse> GetRouteToStation(decimal userLng, decimal userLat, int stationId)
+        public async Task<OsrmRouteResponse> GetRouteToStation(decimal userLng, decimal userLat, int stationId, string profile = "car")
         {
             var station = await _stationRepo.GetById(stationId);
             if (station == null) return null!;
 
-            var route = await _osrmService.GetRoute(
-                (userLng, userLat),
-                (station.Longitude ?? 0m, station.Latitude ?? 0m)
-            );
+            var start = new CoordinateDto(userLng, userLat);
+            var end = new CoordinateDto(station.Longitude ?? 0, station.Latitude ?? 0);
 
-            return route;
+            return await _osrmService.GetRoute(start, end, profile);
+        }
+
+        public async Task<IEnumerable<StationDto>> GetAllWithDistanceAsync(decimal userLng, decimal userLat)
+        {
+            var stations = (await _stationRepo.GetAll()).ToList();
+            if (!stations.Any())
+                return [];
+
+            var valid = stations
+                .Where(s => s.Longitude.HasValue && s.Latitude.HasValue)
+                .ToList();
+
+            if (!valid.Any())
+            {
+                _logger.LogWarning("Không có trạm hợp lệ để tính OSRM /table");
+                return [];
+            }
+
+            // Gọi OSRM Table
+            var coords = valid.Select(s => (s.Longitude!.Value, s.Latitude!.Value));
+            OsrmTableResponse table;
+            try
+            {
+                table = await _osrmService.GetTable(new CoordinateDto(userLng, userLat),
+                                                    coords.Select(c => new CoordinateDto(c.Item1, c.Item2)));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi gọi OSRM /table");
+                throw;
+            }
+
+            var distances = table.distances?.FirstOrDefault();
+            var durations = table.durations?.FirstOrDefault();
+
+            var result = new List<StationDto>();
+
+            for (int i = 0; i < valid.Count; i++)
+            {
+                var dto = _mapper.Map<StationDto>(valid[i]);
+                dto.AvailableBatteries = await _inventoryRepo.CountAvailableBatteries(dto.StationId);
+
+                if (distances != null && i < distances.Length)
+                    dto.DistanceKm = Math.Round(distances[i] / 1000.0, 2);
+
+                if (durations != null && i < durations.Length)
+                    dto.DurationMin = Math.Round(durations[i] / 60.0, 1);
+
+                result.Add(dto);
+            }
+
+            return result;
         }
     }
 }

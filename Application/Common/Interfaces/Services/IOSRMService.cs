@@ -1,11 +1,17 @@
-﻿
-using Application.Dtos.Osrm;
+﻿using Application.Dtos.Osrm;
 
 namespace Application.Common.Interfaces.Services
 {
     public interface IOSRMService
     {
-        Task<OsrmTableResponse> GetTable((decimal lng, decimal lat) start, IEnumerable<(decimal lng, decimal lat)> stations);
-        Task<OsrmRouteResponse> GetRoute((decimal lng, decimal lat) start, (decimal lng, decimal lat) end);
+        Task<OsrmTableResponse> GetTable(
+            CoordinateDto start,
+            IEnumerable<CoordinateDto> destinations,
+            string profile = "car");
+
+        Task<OsrmRouteResponse> GetRoute(
+            CoordinateDto start,
+            CoordinateDto end,
+            string profile = "car");
     }
 }

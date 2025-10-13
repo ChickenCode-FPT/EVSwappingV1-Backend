@@ -10,58 +10,70 @@ namespace Infrastructure.Services
         private readonly HttpClient _http;
         private readonly ILogger<OSRMService> _logger;
 
+        private readonly Dictionary<string, string> _baseUrls = new()
+        {
+            { "car", "http://127.0.0.1:5000" },
+            { "motorbike", "http://127.0.0.1:5001" },
+            { "truck", "http://127.0.0.1:5002" }
+            // Hoặc dùng proxy:
+            // { "car", "http://127.0.0.1:8080/car" },
+            // { "motorbike", "http://127.0.0.1:8080/motorbike" },
+            // { "truck", "http://127.0.0.1:8080/truck" },
+        };
+
         public OSRMService(HttpClient httpClient, ILogger<OSRMService> logger)
         {
             _http = httpClient;
             _logger = logger;
-
-            if (_http.BaseAddress == null)
-            {
-                _http.BaseAddress = new Uri("http://127.0.0.1:5000"); // OSRM local server
-            }
         }
 
-        // Lấy matrix khoảng cách + thời gian từ user tới nhiều stations
-        public async Task<OsrmTableResponse> GetTable((decimal lng, decimal lat) start, IEnumerable<(decimal lng, decimal lat)> stations)
+        private string GetBaseUrl(string profile)
         {
-            var stationList = stations.ToList();
-            if (!stationList.Any())
-                throw new ArgumentException("Không có station hợp lệ để tính OSRM table.");
+            if (!_baseUrls.TryGetValue(profile.ToLower(), out var url))
+                throw new ArgumentException($"Profile không hợp lệ: {profile}");
+            return url;
+        }
 
-            var coords = string.Join(";", new[] { $"{start.lng},{start.lat}" }
-                .Concat(stationList.Select(s => $"{s.lng},{s.lat}")));
+        public async Task<OsrmTableResponse> GetTable(
+            CoordinateDto start,
+            IEnumerable<CoordinateDto> destinations,
+            string profile = "car")
+        {
+            var baseUrl = GetBaseUrl(profile);
+            var destList = destinations.ToList();
+            if (!destList.Any())
+                throw new ArgumentException("Không có destination hợp lệ để tính OSRM table.");
 
-            // sources=0 (user), destinations=1..n (các trạm)
-            var destIdx = string.Join(";", Enumerable.Range(1, stationList.Count));
-            var url = $"/table/v1/driving/{coords}?annotations=distance,duration&sources=0&destinations={destIdx}";
+            var coords = string.Join(";", new[] { start.ToString() }
+                .Concat(destList.Select(s => s.ToString())));
 
-            _logger.LogDebug("OSRM Table API gọi: {Url}", url);
+            var destIdx = string.Join(";", Enumerable.Range(1, destList.Count));
+            var url = $"{baseUrl}/table/v1/driving/{coords}?annotations=distance,duration&sources=0&destinations={destIdx}";
+
+            _logger.LogDebug("OSRM Table API ({Profile}) gọi: {Url}", profile, url);
 
             var response = await _http.GetFromJsonAsync<OsrmTableResponse>(url);
 
-            if (response == null)
-                throw new Exception("OSRM /table API trả về null.");
-
-            if (response.code != "Ok")
-                throw new Exception($"OSRM /table API lỗi: {response.code}");
-
-            _logger.LogDebug("OSRM table trả về {Count} điểm hợp lệ.", stationList.Count);
-
-            if (response.distances != null && response.distances.Any())
-                _logger.LogDebug("Distances row: {Row}", string.Join(", ", response.distances.First()));
+            if (response == null || response.code != "Ok")
+                throw new Exception($"OSRM /table ({profile}) lỗi: {response?.code ?? "null"}");
 
             return response;
         }
 
-        // lấy route chi tiết giữa 2 điểm (polyline, distance, duration)
-        public async Task<OsrmRouteResponse> GetRoute((decimal lng, decimal lat) start, (decimal lng, decimal lat) end)
+        public async Task<OsrmRouteResponse> GetRoute(
+            CoordinateDto start,
+            CoordinateDto end,
+            string profile = "car")
         {
-            var url = $"/route/v1/driving/{start.lng},{start.lat};{end.lng},{end.lat}?overview=full&geometries=polyline";
+            var baseUrl = GetBaseUrl(profile);
+            var url = $"{baseUrl}/route/v1/driving/{start};{end}?overview=full&geometries=polyline";
+
+            _logger.LogDebug("OSRM Route API ({Profile}) gọi: {Url}", profile, url);
 
             var response = await _http.GetFromJsonAsync<OsrmRouteResponse>(url);
 
             if (response == null || response.code != "Ok")
-                throw new Exception("OSRM /route API failed");
+                throw new Exception($"OSRM /route ({profile}) lỗi.");
 
             return response;
         }

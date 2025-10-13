@@ -1,5 +1,6 @@
 ﻿using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
+using Application.Common.Interfaces.Services.Application.Common.Interfaces.Services;
 using Domain.Models;
 using Infrastructure.Jobs;
 using Infrastructure.Persistance.Repositories;
@@ -51,6 +52,9 @@ namespace Infrastructure
                 };
             });
 
+            services.AddHttpContextAccessor();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
+
             services.AddHttpClient<IOSRMService, OSRMService>(client =>
             {
                 client.BaseAddress = new Uri("http://127.0.0.1:5000"); 
@@ -91,6 +95,7 @@ namespace Infrastructure
             services.AddScoped<IVehicleRepository, VehicleRepository>();
             services.AddScoped<ISwapTransactionRepository, SwapTransactionRepository>();
             services.AddScoped<IReservationAllocationRepository, ReservationAllocationRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
 
             return services;
         }
