@@ -91,10 +91,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    await MigrateDatabase.MigrateAsynce(app.Services);
+    //await MigrateDatabase.MigrateAsynce(app.Services);
 }
-
-await AppSeeder.SeedAllAsync(app.Services);
 
 app.UseHttpsRedirection();
 

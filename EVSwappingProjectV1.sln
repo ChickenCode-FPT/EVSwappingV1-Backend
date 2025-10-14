@@ -16,8 +16,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		note.txt = note.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{BA45A68F-5A04-4905-9BBE-03F54B3BA94C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,10 +38,6 @@ Global
 		{D39E92E9-F589-4B57-98CD-69BD1E114382}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D39E92E9-F589-4B57-98CD-69BD1E114382}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D39E92E9-F589-4B57-98CD-69BD1E114382}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BA45A68F-5A04-4905-9BBE-03F54B3BA94C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA45A68F-5A04-4905-9BBE-03F54B3BA94C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA45A68F-5A04-4905-9BBE-03F54B3BA94C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA45A68F-5A04-4905-9BBE-03F54B3BA94C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

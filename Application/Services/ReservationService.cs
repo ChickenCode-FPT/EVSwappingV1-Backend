@@ -14,7 +14,6 @@ namespace Application.Services
         private readonly IStationInventoryRepository _inventoryRepo;
         private readonly IReservationAllocationRepository _reservationAllocationRepo;
         private readonly IUserRepository _userRepo;
-        private readonly IVehicleRepository _vehicleRepo;
         private readonly ICurrentUserService _currentUser;
         private readonly IMapper _mapper;
 
@@ -23,7 +22,6 @@ namespace Application.Services
             IStationInventoryRepository inventoryRepo,
             IReservationAllocationRepository reservationAllocationRepo,
             IUserRepository userRepo,
-            IVehicleRepository vehicleRepo,
             ICurrentUserService currentUser,
             IMapper mapper)
         {
@@ -31,7 +29,6 @@ namespace Application.Services
             _inventoryRepo = inventoryRepo;
             _reservationAllocationRepo = reservationAllocationRepo;
             _userRepo = userRepo;
-            _vehicleRepo = vehicleRepo;
             _currentUser = currentUser;
             _mapper = mapper;
         }

@@ -24,6 +24,7 @@ namespace Infrastructure
         {
             services.AddDbContext<EVSwappingV2Context>(options =>
                options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
+
             // Identity
             services.AddIdentity<User, IdentityRole>()
                      .AddEntityFrameworkStores<EVSwappingV2Context>()
