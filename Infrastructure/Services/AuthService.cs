@@ -145,7 +145,7 @@ namespace Infrastructure.Services
                 claims.Add(new Claim("roles", role));
             }
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? ""));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(

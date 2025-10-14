@@ -70,8 +70,8 @@ builder.Services.AddAuthentication(options =>
 .AddCookie("Cookies")
 .AddGoogle("Google", options =>
 {
-    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
     options.Scope.Add("email");
     options.Scope.Add("profile");
     options.SaveTokens = true;
@@ -91,7 +91,10 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    await MigrateDatabase.MigrateAsynce(app.Services);
 }
+
+await AppSeeder.SeedAllAsync(app.Services);
 
 app.UseHttpsRedirection();
 

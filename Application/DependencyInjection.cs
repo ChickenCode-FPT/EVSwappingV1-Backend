@@ -22,6 +22,8 @@ namespace Application
             services.AddScoped<IStationService, StationService>();
             services.AddScoped<IReservationService, ReservationService>();
             services.AddScoped<IVehicleService, VehicleService>();
+            services.AddScoped<IRatingService, RatingService>();
+            services.AddScoped<ISupportTicketService, SupportTicketService>();
 
             return services;
         }

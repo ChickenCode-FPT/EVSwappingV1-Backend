@@ -4,7 +4,7 @@ namespace Application.Users.Commands.Password
 {
     public class ForgotPasswordCommand : IRequest<Unit>
     {
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
     }
 
 }
