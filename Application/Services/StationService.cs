@@ -114,7 +114,6 @@ namespace Application.Services
                 return [];
             }
 
-            // Gọi OSRM Table
             var coords = valid.Select(s => (s.Longitude!.Value, s.Latitude!.Value));
             OsrmTableResponse table;
             try

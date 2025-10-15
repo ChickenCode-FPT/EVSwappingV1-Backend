@@ -35,14 +35,12 @@ namespace Application.Services
 
         public async Task<ReservationDto> CreateReservation(CreateReservationRequest request)
         {
-            // ===== 1️⃣ Lấy user hiện tại =====
             var userId = _currentUser.UserId
                 ?? throw new UnauthorizedAccessException("Không xác định được người dùng từ token.");
 
             var user = await _userRepo.GetByIdWithDetailsAsync(userId)
                 ?? throw new InvalidOperationException("Không tìm thấy thông tin người dùng.");
 
-            // ===== 2️⃣ Kiểm tra điều kiện bắt buộc =====
             if (user.Driver == null)
                 throw new InvalidOperationException("Bạn cần đăng ký trở thành tài xế trước khi đặt lịch.");
 
@@ -50,7 +48,6 @@ namespace Application.Services
             if (!userVehicles.Any())
                 throw new InvalidOperationException("Bạn cần thêm ít nhất một phương tiện trước khi đặt lịch.");
 
-            // ===== 3️⃣ Lấy vehicle =====
             Vehicle vehicle;
             if (request.VehicleId.HasValue)
             {
@@ -59,7 +56,6 @@ namespace Application.Services
             }
             else
             {
-                // nếu không chỉ định xe -> chọn xe đầu tiên (hoặc xe mặc định nếu có field IsDefault)
                 vehicle = userVehicles.First();
             }
 
@@ -68,7 +64,6 @@ namespace Application.Services
 
             var requiredModelId = vehicle.BatteryModelPreferenceId.Value;
 
-            // ===== 4️⃣ Validate thời gian =====
             var fromUtc = request.ReservedFrom.ToUniversalTime();
             var toUtc = request.ReservedTo.ToUniversalTime();
 
@@ -78,7 +73,6 @@ namespace Application.Services
             if ((toUtc - fromUtc).TotalMinutes > 90)
                 throw new InvalidOperationException("Thời lượng đặt tối đa là 90 phút.");
 
-            // ===== 5️⃣ Kiểm tra lịch trùng =====
             var existing = await _reservationRepo.GetByUserId(userId);
             if (existing.Any(r =>
                     r.Status == ReservationStatus.Pending &&
@@ -86,14 +80,12 @@ namespace Application.Services
                     r.ReservedTo > fromUtc))
                 throw new InvalidOperationException("Bạn đã có lịch đặt trùng thời gian.");
 
-            // ===== 6️⃣ Kiểm tra pin khả dụng =====
             var available = await _inventoryRepo.CountAvailableBatteries(
                 request.StationId, requiredModelId);
 
             if (available <= 0)
                 throw new InvalidOperationException("Trạm hiện không còn pin đầy phù hợp với xe của bạn.");
 
-            // ===== 7️⃣ Tìm pin phù hợp chưa bị giữ =====
             var candidateBatteries = await _inventoryRepo.GetFullBatteriesByModel(
                 request.StationId, requiredModelId);
 
@@ -113,7 +105,6 @@ namespace Application.Services
             if (selectedBatteryId == null)
                 throw new InvalidOperationException("Tất cả pin phù hợp đang được giữ. Vui lòng chọn khung giờ khác.");
 
-            // ===== 8️⃣ Tạo Reservation =====
             var reservation = new Reservation
             {
                 UserId = userId,
@@ -127,7 +118,6 @@ namespace Application.Services
             };
             await _reservationRepo.Add(reservation);
 
-            // ===== 9️⃣ Giữ pin tương ứng =====
             var allocation = new ReservationAllocation
             {
                 ReservationId = reservation.ReservationId,
@@ -140,7 +130,6 @@ namespace Application.Services
 
             await _inventoryRepo.MarkHeld(selectedBatteryId.Value, request.StationId, reservation.ReservationId);
 
-            // ===== 🔟 Trả về kết quả =====
             var reservationDto = _mapper.Map<ReservationDto>(reservation);
             reservationDto.Allocation = _mapper.Map<ReservationAllocationDto>(allocation);
 
