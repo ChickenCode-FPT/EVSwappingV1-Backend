@@ -1,4 +1,4 @@
-﻿using Application.Common.Interfaces.Repositories;
+using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
 using Domain.Models;
 using Infrastructure.Persistance.Repositories;
@@ -65,6 +65,8 @@ namespace Infrastructure
             services.AddScoped<IVehicleRepository, VehicleRepository>();
             services.AddScoped<IRatingRepository, RatingRepository>();
             services.AddScoped<ISupportTicketRepository, SupportTicketRepository>();
+            services.AddScoped<IRevenueRepository, RevenueRepository>();
+            services.AddScoped<ISwapTransactionRepository, SwapTransactionRepository>();
 
             return services;
         }
