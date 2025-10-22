@@ -1,4 +1,6 @@
-﻿using Application.Common.Interfaces.Repositories;
+﻿using Application.Common.Interfaces;
+using Application.Common.IRespositories;
+using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
 using Application.Common.Interfaces.Services.Application.Common.Interfaces.Services;
 using Domain.Models;
@@ -85,6 +87,10 @@ namespace Infrastructure
 
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IStationInventoryService, StationInventoryService>();
+            services.AddTransient<ISwapTransactionService, SwapTransactionRepository>();
+            services.AddTransient<IBatteryModelRepository, BatteryModelRepository>();
+            services.AddTransient<IPaymentRepository, PaymentRepository>();
 
             services.AddScoped<IDriverRepository, DriverRepository>();
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();

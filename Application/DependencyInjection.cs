@@ -1,4 +1,10 @@
-﻿using Application.Common.Interfaces.Services;
+﻿using Application.Common.Interfaces;
+using Application.Dtos;
+using Application.Mappings;
+using Application.Services;
+using Domain.Models;
+using Application.Common.Interfaces.Repositories;
+using Application.Common.Interfaces.Services;
 using Application.Mappings;
 using Application.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +18,11 @@ namespace Application
         {
             services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+
+            services.AddAutoMapper(typeof(AppProfile).Assembly);
+
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IBatteryModelService, BatteryModelService>();
 
             services.AddAutoMapper(typeof(AppProfile));
 

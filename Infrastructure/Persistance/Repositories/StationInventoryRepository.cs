@@ -1,18 +1,43 @@
-﻿using Application.Common.Interfaces.Repositories;
+﻿using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repositories;
+using Application.Dtos;
 using Domain.Enums;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.Repositories
 {
     public class StationInventoryRepository : IStationInventoryRepository
     {
         private readonly EVSwappingV2Context _context;
+        private readonly EVSwappingV2Context _db;
 
         public StationInventoryRepository(EVSwappingV2Context context)
         {
             _context = context;
         }
+        public async Task<StationInventory> GetInventory(int stationId, CancellationToken ct)
+        {
+            var query = await _db.StationInventories
+                .Include(si => si.Battery).ThenInclude(b => b.BatteryModel)
+                .Where(si => si.StationId == stationId)
+                .FirstOrDefaultAsync(ct);
+            return query;
+        }
+
+        public async Task<IEnumerable<StationInventory>> GetInventorys(CancellationToken ct)
+        {
+            var query = await _db.StationInventories
+                .Include(si => si.Battery).ThenInclude(b => b.BatteryModel)
+                .ToListAsync(ct);
+            return query;
+        }
+
 
         public async Task<IEnumerable<StationInventory>> GetByStationId(int stationId)
         {

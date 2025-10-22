@@ -1,7 +1,14 @@
-﻿using Application.Common.Interfaces.Repositories;
+﻿using Application.Common.Interfaces;
+using Domain.Enums;
+using Application.Common.Interfaces.Repositories;
 using Domain.Enums;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.Repositories
 {
@@ -9,14 +16,14 @@ namespace Infrastructure.Persistance.Repositories
     {
         private readonly EVSwappingV2Context _context;
 
-        public BatteryRepository(EVSwappingV2Context context)
-        {
-            _context = context;
-        }
+        public BatteryRepository(EVSwappingV2Context context) => _context = context;
 
-        public async Task<Battery?> GetById(int batteryId)
+        public async Task<Battery?> GetById(int id) 
+            => await _context.Batteries.Include(x => x.BatteryModel).FirstOrDefaultAsync(b => b.BatteryId == id);
+
+        public async Task<List<Battery>> GetAll()
         {
-            return await _context.Batteries.FindAsync(batteryId);
+            return await _context.Batteries.Include(x => x.BatteryModel).ToListAsync();
         }
 
         public async Task<IEnumerable<Battery>> GetAvailableBatteries(int? batteryModelId = null)
