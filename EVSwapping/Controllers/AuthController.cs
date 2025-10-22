@@ -1,4 +1,4 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.Interfaces.Services;
 using Application.Users.Commands.Login;
 using Application.Users.Commands.Password;
 using Application.Users.Commands.RefreshToken;
@@ -8,10 +8,7 @@ using Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EVSwapping.Controllers
@@ -91,7 +88,7 @@ namespace EVSwapping.Controllers
         [HttpGet("google-login")]
         public IActionResult GoogleLogin()
         {
-            var redirectUrl = Url.Action(nameof(GoogleCallback)); 
+            var redirectUrl = Url.Action(nameof(GoogleCallback));
             var properties = new AuthenticationProperties
             {
                 RedirectUri = redirectUrl

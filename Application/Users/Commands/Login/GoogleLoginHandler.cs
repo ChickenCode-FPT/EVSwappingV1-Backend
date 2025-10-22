@@ -1,17 +1,11 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.Interfaces.Services;
 using Domain.Dtos;
 using Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Users.Commands.Login
 {
@@ -57,7 +51,7 @@ namespace Application.Users.Commands.Login
                     FullName = name,
                     PhoneNumber = null
                 };
-               
+
                 var createResult = await _userManager.CreateAsync(user);
                 if (!createResult.Succeeded)
                 {
@@ -81,7 +75,7 @@ namespace Application.Users.Commands.Login
             await httpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
 
-            var jwtToken = await  _authService.GenerateJwtToken(user);
+            var jwtToken = await _authService.GenerateJwtToken(user);
             var refreshToken = _authService.GenerateRefreshToken();
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);

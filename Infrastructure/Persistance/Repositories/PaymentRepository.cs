@@ -17,11 +17,14 @@ namespace Infrastructure.Persistance.Repositories
             _context = context;
         }
 
+        public async Task<Payment> Add(Payment payment)
         // Create (Add)
         public async Task Add(Payment payment)
         {
+            _context.Payments.Add(payment);
             await _context.Payments.AddAsync(payment);
             await _context.SaveChangesAsync();
+            return payment;
         }
 
         // Read (Get)
@@ -35,14 +38,17 @@ namespace Infrastructure.Persistance.Repositories
             return await _context.Payments.ToListAsync();
         }
 
+        public async Task<Payment?> GetById(long paymentId)
         public async Task<IEnumerable<Payment>> GetFilterWithSwapt()
         {
+            return await _context.Payments.FirstOrDefaultAsync(p => p.PaymentId == paymentId);
             return await _context.Payments.Include(x => x.SwapTransaction).ToListAsync();
         }
 
         // Update
         public async Task Update(Payment payment)
         {
+            _context.Payments.Update(payment);
             await _context.SaveChangesAsync();
         }
 
@@ -53,8 +59,8 @@ namespace Infrastructure.Persistance.Repositories
             if (payment != null)
             {
                 _context.Payments.Remove(payment);
-                await _context.SaveChangesAsync();
-            }
+            await _context.SaveChangesAsync();
+        }
             else
             {
                 throw new Exception("Payment not found");

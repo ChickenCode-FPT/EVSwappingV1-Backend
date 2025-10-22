@@ -3,9 +3,12 @@ using Application.Dtos;
 using Application.Mappings;
 using Application.Services;
 using Domain.Models;
+using Application.Common.Interfaces.Repositories;
+using Application.Common.Interfaces.Services;
+using Application.Mappings;
+using Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-
 
 namespace Application
 {
@@ -20,6 +23,16 @@ namespace Application
 
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IBatteryModelService, BatteryModelService>();
+
+            services.AddAutoMapper(typeof(AppProfile));
+
+            services.AddScoped<IDriverService, DriverService>();
+            services.AddScoped<ISubscriptionService, SubscriptionService>();
+            services.AddScoped<ISubscriptionPackageService, SubscriptionPackageService>();
+            services.AddScoped<IBatteryService, BatteryService>();
+            services.AddScoped<IStationService, StationService>();
+            services.AddScoped<IReservationService, ReservationService>();
+            services.AddScoped<IVehicleService, VehicleService>();
 
             return services;
         }

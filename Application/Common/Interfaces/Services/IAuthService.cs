@@ -1,18 +1,12 @@
 ﻿using Domain.Dtos;
 using Domain.Models;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Application.Common.Interfaces
+namespace Application.Common.Interfaces.Services
 {
     public interface IAuthService
     {
-        Task<string> RegisterAsync(string email, string password, string fullName,string phoneNumber);
+        Task<string> RegisterAsync(string email, string password, string fullName, string phoneNumber);
         Task<LoginResponseDto> LoginAsync(string email, string password);
         Task GeneratePasswordResetTokenAsync(string email);
         Task<string> GenerateJwtToken(User user);
