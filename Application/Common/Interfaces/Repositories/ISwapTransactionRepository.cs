@@ -11,5 +11,9 @@ namespace Application.Common.Interfaces.Repositories
         Task Add(SwapTransaction transaction);
         Task Update(SwapTransaction transaction);
         Task Delete(long swapTransactionId);
+
+        Task<List<SwapTransaction>> GetAll();
+        Task<List<SwapTransaction>> GetAllWithStationAndReversation();
+        Task<SwapTransaction?> GetAllWithStationAndReversationID(int id);
     }
 }

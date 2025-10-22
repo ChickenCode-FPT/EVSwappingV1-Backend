@@ -1,16 +1,9 @@
-﻿using Application.Common.Interfaces;
-using Application.Common.Interfaces.Repositories;
+﻿using Application.Common.Interfaces.Repositories;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.Repositories
 {
-    public class SwapTransactionRepository : ISwapTransactionService
     public class SwapTransactionRepository : ISwapTransactionRepository
     {
         private readonly EVSwappingV2Context _context;
@@ -19,7 +12,6 @@ namespace Infrastructure.Persistance.Repositories
         {
             _context = context;
         }
-        public SwapTransactionRepository(EVSwappingV2Context context) => _context = context;
 
         /// <summary>
         /// Kiểm tra xem Reservation có giao dịch đổi pin nào chưa.
@@ -29,8 +21,9 @@ namespace Infrastructure.Persistance.Repositories
             return await _context.SwapTransactions
                 .AnyAsync(t => t.ReservationId == reservationId && t.SwapStatus == "Completed");
         }
-        public async Task<SwapTransaction?> GetById(long id)
-            => await _context.SwapTransactions.FindAsync(id);
+
+        //public async Task<SwapTransaction?> GetById(long id)
+        //    => await _context.SwapTransactions.FindAsync(id);
 
         public async Task<SwapTransaction?> GetById(long swapTransactionId)
         {
@@ -40,6 +33,7 @@ namespace Infrastructure.Persistance.Repositories
                 .Include(t => t.CustomerUser)
                 .FirstOrDefaultAsync(t => t.SwapTransactionId == swapTransactionId);
         }
+
         public async Task<List<SwapTransaction>> GetAll()
             => await _context.SwapTransactions.ToListAsync();
 
@@ -82,11 +76,14 @@ namespace Infrastructure.Persistance.Repositories
         {
             var tx = await _context.SwapTransactions.FindAsync(swapTransactionId);
             if (tx != null)
-        public void ConfirmSwapTransaction(long transactionId)
-        {
+            {
                 _context.SwapTransactions.Remove(tx);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public void ConfirmSwapTransaction(long transactionId)
+        {
             var transaction = _context.SwapTransactions.FirstOrDefault(t => t.SwapTransactionId == transactionId);
             if (transaction == null) throw new Exception("Transaction not found");
 
@@ -95,7 +92,5 @@ namespace Infrastructure.Persistance.Repositories
 
             _context.SaveChanges();
         }
-
     }
-
 }

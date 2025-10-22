@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.Dtos
+﻿namespace Application.Dtos
 {
 
     public class SwapTransactionDto
@@ -53,9 +47,9 @@ namespace Application.Dtos
         public ReverInSwapDto Reservation { get; set; }
     }
 
-        //station
-        public class StationInSwapDto 
-        { 
+    //station
+    public class StationInSwapDto
+    {
         public int StationId { get; set; }
 
         public string Code { get; set; }

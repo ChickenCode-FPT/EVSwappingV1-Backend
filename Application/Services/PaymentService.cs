@@ -4,11 +4,6 @@ using Application.Common.IRespositories;
 using Application.Dtos;
 using AutoMapper;
 using Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -16,10 +11,10 @@ namespace Application.Services
     {
         private readonly IPaymentRepository _paymentRepository;
         private readonly IBatteryRepository _batteryRepository;
-        private readonly ISwapTransactionService _swapTransactionRepository;
+        private readonly ISwapTransactionRepository _swapTransactionRepository;
         private readonly IMapper _mapper;
 
-        public PaymentService(IPaymentRepository paymentRepository, IBatteryRepository batteryRepository, ISwapTransactionService swapTransactionRepository, IMapper mapper)
+        public PaymentService(IPaymentRepository paymentRepository, IBatteryRepository batteryRepository, ISwapTransactionRepository swapTransactionRepository, IMapper mapper)
         {
             _paymentRepository = paymentRepository;
             _batteryRepository = batteryRepository;

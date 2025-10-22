@@ -1,6 +1,4 @@
 ﻿using Application.Common.Interfaces.Services;
-using Application.Dtos;
-using Application.Dtos.Osrm;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EVSwapping.Controllers

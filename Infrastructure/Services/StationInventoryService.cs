@@ -2,11 +2,6 @@
 using Application.Dtos;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Services
 {
@@ -58,7 +53,7 @@ namespace Infrastructure.Services
                         {
                             BatteryId = x.BatteryId,
                             Model = x.Battery.BatteryModel?.ModelCode,
-                            Capacity = x.Battery.BatteryModel?.CapacityKwh ?? 0, 
+                            Capacity = x.Battery.BatteryModel?.CapacityKwh ?? 0,
                             Status = x.Battery.Status
                         })
                         .ToList()

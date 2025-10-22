@@ -1,6 +1,5 @@
 ﻿using Application.Batteries.Commands;
 using Application.Dtos;
-using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

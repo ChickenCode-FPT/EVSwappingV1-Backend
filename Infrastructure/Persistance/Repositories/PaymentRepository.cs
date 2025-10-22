@@ -1,10 +1,6 @@
 ﻿using Application.Common.IRespositories;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.Repositories
 {
@@ -52,8 +48,8 @@ namespace Infrastructure.Persistance.Repositories
             if (payment != null)
             {
                 _context.Payments.Remove(payment);
-            await _context.SaveChangesAsync();
-        }
+                await _context.SaveChangesAsync();
+            }
             else
             {
                 throw new Exception("Payment not found");

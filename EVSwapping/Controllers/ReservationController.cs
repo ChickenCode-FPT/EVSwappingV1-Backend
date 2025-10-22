@@ -7,7 +7,7 @@ namespace EVSwapping.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] 
+    [Authorize]
     public class ReservationController : ControllerBase
     {
         private readonly IReservationService _reservationService;

@@ -1,11 +1,8 @@
-﻿using System.Text;
-using Application;
+﻿using Application;
 using Infrastructure;
 using Infrastructure.Seeder;
 using Infrastructure.Settings;
 using Microsoft.OpenApi.Models;
-using Serilog; 
-using Infrastructure.Monitoring;
 
 var builder = WebApplication.CreateBuilder(args);
 

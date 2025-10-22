@@ -1,5 +1,4 @@
-﻿using Application.Common.Interfaces.Services;
-using Application.Common.Interfaces.Services.Application.Common.Interfaces.Services;
+﻿using Application.Common.Interfaces.Services.Application.Common.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
@@ -20,7 +19,7 @@ namespace Infrastructure.Services
 
         public string? UserId =>
             User?.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? User?.FindFirstValue("sub"); 
+            ?? User?.FindFirstValue("sub");
 
         public string? Email =>
             User?.FindFirstValue(ClaimTypes.Email);

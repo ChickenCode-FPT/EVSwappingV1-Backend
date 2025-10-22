@@ -1,11 +1,7 @@
 ﻿using Application.Common.Interfaces;
 using Application.Dtos;
-using Application.Services;
 using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace EVSwapping.Controllers
 {

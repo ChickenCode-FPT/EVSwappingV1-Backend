@@ -1,6 +1,6 @@
 ﻿using Application.Common.Interfaces.Repositories;
-using Domain.Models;
 using Domain.Enums;
+using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance.Repositories

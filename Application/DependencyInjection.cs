@@ -1,9 +1,4 @@
 ﻿using Application.Common.Interfaces;
-using Application.Dtos;
-using Application.Mappings;
-using Application.Services;
-using Domain.Models;
-using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
 using Application.Mappings;
 using Application.Services;

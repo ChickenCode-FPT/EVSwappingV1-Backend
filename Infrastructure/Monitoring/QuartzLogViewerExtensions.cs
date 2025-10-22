@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using System.Text;
-
-namespace Infrastructure.Monitoring
+﻿namespace Infrastructure.Monitoring
 {
     public static class QuartzLogViewerExtensions
     {

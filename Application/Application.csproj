@@ -11,7 +11,7 @@
     <Folder Include="Common\Exceptions\" />
     <Folder Include="Products\Commands\" />
     <Folder Include="Products\Queries\" />
-    <Folder Include="StationInventory\Commands\" />
+    <Folder Include="StationInventories\Commands\" />
   </ItemGroup>
 
   <ItemGroup>

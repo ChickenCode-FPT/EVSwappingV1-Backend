@@ -1,8 +1,8 @@
 ﻿using Application.Common.Interfaces;
-using Application.Common.IRespositories;
 using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
 using Application.Common.Interfaces.Services.Application.Common.Interfaces.Services;
+using Application.Common.IRespositories;
 using Domain.Models;
 using Infrastructure.Jobs;
 using Infrastructure.Persistance.Repositories;
@@ -60,7 +60,7 @@ namespace Infrastructure
 
             services.AddHttpClient<IOSRMService, OSRMService>(client =>
             {
-                client.BaseAddress = new Uri("http://127.0.0.1:5000"); 
+                client.BaseAddress = new Uri("http://127.0.0.1:5000");
             });
 
             services.AddQuartz(q =>
@@ -88,7 +88,6 @@ namespace Infrastructure
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IStationInventoryService, StationInventoryService>();
-            services.AddTransient<ISwapTransactionService, SwapTransactionRepository>();
             services.AddTransient<IBatteryModelRepository, BatteryModelRepository>();
             services.AddTransient<IPaymentRepository, PaymentRepository>();
 

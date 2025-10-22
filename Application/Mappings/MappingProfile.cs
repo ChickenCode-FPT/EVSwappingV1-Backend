@@ -1,15 +1,7 @@
 ﻿using Application.Batteries.Commands;
 using Application.Dtos;
-using Application.SwapTransactions.Commands;
 using AutoMapper;
 using Domain.Models;
-using Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Mappings
 {
@@ -35,14 +27,13 @@ namespace Application.Mappings
 
 
             //swap transaction
-            CreateMap<UpdateSwapTransactionCommand, SwapTransaction>()
-
-            .ForMember(dest => dest.StaffUserId, opt => opt.MapFrom(src => src.StaffId))
-            .ForMember(dest => dest.CustomerUserId, opt => opt.MapFrom(src => src.CustomerId))
-            .ForMember(dest => dest.OutgoingBatteryId, opt => opt.MapFrom(src => src.OldBatteryId))
-            .ForMember(dest => dest.IncomingBatteryId, opt => opt.MapFrom(src => src.NewBatteryId))
-            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Fee))
-            .ForMember(dest => dest.SwapStatus, opt => opt.MapFrom(src => src.SwapStatus));
+            //CreateMap<UpdateSwapTransactionCommand, SwapTransaction>()
+            //.ForMember(dest => dest.StaffUserId, opt => opt.MapFrom(src => src.StaffId))
+            //.ForMember(dest => dest.CustomerUserId, opt => opt.MapFrom(src => src.CustomerId))
+            //.ForMember(dest => dest.OutgoingBatteryId, opt => opt.MapFrom(src => src.OldBatteryId))
+            //.ForMember(dest => dest.IncomingBatteryId, opt => opt.MapFrom(src => src.NewBatteryId))
+            //.ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Fee))
+            //.ForMember(dest => dest.SwapStatus, opt => opt.MapFrom(src => src.SwapStatus));
 
             CreateMap<TranscationDto, SwapTransaction>().ReverseMap();
 
@@ -89,7 +80,6 @@ namespace Application.Mappings
             CreateMap<Rating, RatingDto>().ReverseMap();
 
             CreateMap<SupportTicket, SupportTicketDto>().ReverseMap();
-
         }
     }
 }
