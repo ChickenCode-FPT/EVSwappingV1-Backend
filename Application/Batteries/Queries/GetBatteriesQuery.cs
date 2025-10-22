@@ -1,0 +1,34 @@
+﻿using Application.Common.Interfaces;
+using Application.Dtos;
+using AutoMapper;
+using Domain.Models;
+using MediatR;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Batteries.Queries
+{
+
+    public record GetBatteriesQuery : IRequest<List<BatteriesDto>>;
+
+    public class GetBatteriesQueryHandler : IRequestHandler<GetBatteriesQuery, List<BatteriesDto>>
+    {
+        private readonly IBatteryService _repo;
+        private readonly IMapper _mapper;
+
+        public GetBatteriesQueryHandler(IBatteryService repo, IMapper mapper)
+        {
+            _repo = repo;
+            _mapper = mapper;
+        }
+
+        public async Task<List<BatteriesDto>> Handle(GetBatteriesQuery request, CancellationToken cancellationToken)
+        {
+            var batteries = await _repo.GetAll();
+            return _mapper.Map<List<BatteriesDto>>(batteries);
+        }
+    }
+}

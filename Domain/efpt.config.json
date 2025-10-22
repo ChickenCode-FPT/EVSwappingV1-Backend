@@ -90,7 +90,7 @@
    ],
    "UiHint": null,
    "UncountableWords": null,
-   "UseStoredProcedureCalls": true,
+   "UseAsyncStoredProcedureCalls": true,
    "UseBoolPropertiesWithoutDefaultSql": false,
    "UseDatabaseNames": false,
    "UseDatabaseNamesForRoutines": true,

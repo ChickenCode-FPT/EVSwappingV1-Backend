@@ -1,5 +1,7 @@
 ﻿using Application.Common.Interfaces;
+using Application.Common.IRespositories;
 using Domain.Models;
+using Infrastructure.Persistance.Repositories;
 using Infrastructure.Services;
 using Infrastructure.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -55,6 +57,11 @@ namespace Infrastructure
             services.AddScoped<EmailService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IStationInventoryService, StationInventoryService>();
+            services.AddTransient<ISwapTransactionService, SwapTransactionRepository>();
+            services.AddTransient<IBatteryService, BatteryRepository>();
+            services.AddTransient<IBatteryModelRepository, BatteryModelRepository>();
+            services.AddTransient<IPaymentRepository, PaymentRepository>();
             return services;
         }
     }

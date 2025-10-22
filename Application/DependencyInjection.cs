@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Application.Common.Interfaces;
+using Application.Dtos;
+using Application.Mappings;
+using Application.Services;
+using Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Application
 {
@@ -14,6 +15,11 @@ namespace Application
         {
             services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+
+            services.AddAutoMapper(typeof(AppProfile).Assembly);
+
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IBatteryModelService, BatteryModelService>();
 
             return services;
         }
