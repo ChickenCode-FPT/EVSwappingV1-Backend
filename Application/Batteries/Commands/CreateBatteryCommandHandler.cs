@@ -1,4 +1,5 @@
 ﻿using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repositories;
 using Domain.Models;
 using MediatR;
 using System;
@@ -11,16 +12,15 @@ namespace Application.Batteries.Commands
 {
     public class CreateBatteryCommandHandler : IRequestHandler<CreateBatteryCommand, int>
     {
-        private readonly IBatteryService _repo;
+        private readonly IBatteryRepository _repo;
 
-        public CreateBatteryCommandHandler(IBatteryService repo) => _repo = repo;
+        public CreateBatteryCommandHandler(IBatteryRepository repo) => _repo = repo;
 
         public async Task<int> Handle(CreateBatteryCommand request, CancellationToken cancellationToken)
         {
             var entity = new Battery
             {
                 BatteryModelId = request.modelId,
-                Status = request.Status.ToString(),
             };
 
             await _repo.Add(entity);

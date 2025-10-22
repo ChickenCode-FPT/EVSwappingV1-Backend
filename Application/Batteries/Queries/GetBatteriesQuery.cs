@@ -1,4 +1,5 @@
 ﻿using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repositories;
 using Application.Dtos;
 using AutoMapper;
 using Domain.Models;
@@ -16,10 +17,10 @@ namespace Application.Batteries.Queries
 
     public class GetBatteriesQueryHandler : IRequestHandler<GetBatteriesQuery, List<BatteriesDto>>
     {
-        private readonly IBatteryService _repo;
+        private readonly IBatteryRepository _repo;
         private readonly IMapper _mapper;
 
-        public GetBatteriesQueryHandler(IBatteryService repo, IMapper mapper)
+        public GetBatteriesQueryHandler(IBatteryRepository repo, IMapper mapper)
         {
             _repo = repo;
             _mapper = mapper;

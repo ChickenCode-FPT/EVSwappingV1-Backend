@@ -8,5 +8,5 @@ using System.Threading.Tasks;
 
 namespace Application.Batteries.Commands
 {
-    public record CreateBatteryCommand(int modelId, int Capacity, BatteryStatus Status) : IRequest<int>;
+    public record CreateBatteryCommand(int modelId, int Capacity) : IRequest<int>;
 }

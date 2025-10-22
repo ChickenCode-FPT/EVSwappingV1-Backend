@@ -1,4 +1,5 @@
 ﻿using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repositories;
 using AutoMapper;
 using Domain.Enums;
 using MediatR;
@@ -17,17 +18,17 @@ namespace Application.Batteries.Commands
         public int BatteryModelId { get; set; }
         public decimal? CurrentSoH { get; set; }
         public int? CycleCount { get; set; }
-        public BatteryStatus Status { get; set; }
+        public string Status { get; set; }
         public DateTime? LastMaintenance { get; set; }
         public DateTime? CreatedAt { get; set; }
     }
 
     public class UpdateBatteryCommandHandler : IRequestHandler<UpdateBatteryCommand, int>
     {
-        private readonly IBatteryService _repo;
+        private readonly IBatteryRepository _repo;
         private readonly IMapper _mapper;
 
-        public UpdateBatteryCommandHandler(IBatteryService repo, IMapper mapper)
+        public UpdateBatteryCommandHandler(IBatteryRepository repo, IMapper mapper)
         {
             _repo = repo;
             _mapper = mapper;

@@ -8,5 +8,5 @@ using System.Threading.Tasks;
 
 namespace Application.Batteries.Commands
 {
-    public record UpdateBatteryStatusCommand(int Id, BatteryStatus Status) : IRequest;
+    public record UpdateBatteryStatusCommand(int Id) : IRequest;
 }

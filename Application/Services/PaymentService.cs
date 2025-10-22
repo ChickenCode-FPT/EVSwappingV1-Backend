@@ -1,4 +1,5 @@
 ﻿using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repositories;
 using Application.Common.IRespositories;
 using Application.Dtos;
 using AutoMapper;
@@ -14,11 +15,11 @@ namespace Application.Services
     public class PaymentService : IPaymentService
     {
         private readonly IPaymentRepository _paymentRepository;
-        private readonly IBatteryService _batteryRepository;
+        private readonly IBatteryRepository _batteryRepository;
         private readonly ISwapTransactionService _swapTransactionRepository;
         private readonly IMapper _mapper;
 
-        public PaymentService(IPaymentRepository paymentRepository, IBatteryService batteryRepository, ISwapTransactionService swapTransactionRepository, IMapper mapper)
+        public PaymentService(IPaymentRepository paymentRepository, IBatteryRepository batteryRepository, ISwapTransactionService swapTransactionRepository, IMapper mapper)
         {
             _paymentRepository = paymentRepository;
             _batteryRepository = batteryRepository;

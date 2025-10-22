@@ -1,4 +1,5 @@
 ﻿using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repositories;
 using Application.Dtos;
 using AutoMapper;
 using MediatR;
@@ -14,10 +15,10 @@ namespace Application.Batteries.Queries
 
     public class GetBatteriesIDQueryHandler : IRequestHandler<GetBatteriesIDQuery, BatteriesDto> 
     {
-        private readonly IBatteryService _repo;
+        private readonly IBatteryRepository _repo;
         private readonly IMapper _mapper;
 
-        public GetBatteriesIDQueryHandler(IBatteryService repo, IMapper mapper)
+        public GetBatteriesIDQueryHandler(IBatteryRepository repo, IMapper mapper)
         {
             _repo = repo;
             _mapper = mapper;

@@ -28,19 +28,18 @@ namespace EVSwapping.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("status/{status}")]
-        public async Task<IActionResult> GetBatteriesByStatus(string status)
-        {
-            var result = await _mediator.Send(new Application.Batteries.Queries.GetBatteriesByStatusQuery(status));
-            return Ok(result);
-        }
+        //[HttpGet]
+        //[Route("status/{status}")]
+        //public async Task<IActionResult> GetBatteriesByStatus(string status)
+        //{
+        //    var result = await _mediator.Send(new Application.Batteries.Queries.GetBatteriesByStatusQuery(status));
+        //    return Ok(result);
+        //}
 
         [HttpPut("status")]
         public async Task<IActionResult> UpdateBatteryStatus([FromBody] UpdateBatteryStatusDto dto)
         {
-            var statusEnum = Enum.Parse<BatteryStatus>(dto.Status, ignoreCase: true);
-            await _mediator.Send(new UpdateBatteryStatusCommand(dto.Id, statusEnum));
+            await _mediator.Send(new UpdateBatteryStatusCommand(dto.Id));
             return NoContent();
         }
 
@@ -58,12 +57,9 @@ namespace EVSwapping.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateBattery([FromBody] CreateBatteryDto dto)
         {
-            if (!Enum.TryParse<BatteryStatus>(dto.Status, true, out var statusEnum))
-            {
-                return BadRequest($"Invalid battery status: {dto.Status}");
-            }
 
-            var command = new CreateBatteryCommand(dto.ModelId, dto.Capacity, statusEnum);
+
+            var command = new CreateBatteryCommand(dto.ModelId, dto.Capacity);
 
             var id = await _mediator.Send(command);
 

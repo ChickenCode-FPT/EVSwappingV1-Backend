@@ -17,17 +17,12 @@ namespace Infrastructure.Persistance.Repositories
             _context = context;
         }
 
-        public async Task<Payment> Add(Payment payment)
-        // Create (Add)
         public async Task Add(Payment payment)
         {
-            _context.Payments.Add(payment);
             await _context.Payments.AddAsync(payment);
             await _context.SaveChangesAsync();
-            return payment;
         }
 
-        // Read (Get)
         public async Task<Payment?> GetById(int id)
         {
             return await _context.Payments.Include(p => p.SwapTransaction).FirstOrDefaultAsync(p => p.PaymentId == id);
@@ -38,10 +33,8 @@ namespace Infrastructure.Persistance.Repositories
             return await _context.Payments.ToListAsync();
         }
 
-        public async Task<Payment?> GetById(long paymentId)
         public async Task<IEnumerable<Payment>> GetFilterWithSwapt()
         {
-            return await _context.Payments.FirstOrDefaultAsync(p => p.PaymentId == paymentId);
             return await _context.Payments.Include(x => x.SwapTransaction).ToListAsync();
         }
 

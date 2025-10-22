@@ -58,7 +58,6 @@ namespace Infrastructure
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IStationInventoryService, StationInventoryService>();
             services.AddTransient<ISwapTransactionService, SwapTransactionRepository>();
-            services.AddTransient<IBatteryService, BatteryRepository>();
             services.AddTransient<IBatteryModelRepository, BatteryModelRepository>();
             services.AddTransient<IPaymentRepository, PaymentRepository>();
 
