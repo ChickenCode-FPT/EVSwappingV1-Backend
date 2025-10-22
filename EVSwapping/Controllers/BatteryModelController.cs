@@ -15,7 +15,6 @@ namespace EVSwapping.Controllers
             _batteryModelService = batteryModelService;
         }
 
-        // GET: api/batterymodel
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -26,12 +25,10 @@ namespace EVSwapping.Controllers
             }
             catch (Exception ex)
             {
-                // You can log the exception here
                 return StatusCode(500, "An error occurred while retrieving the battery models.");
             }
         }
 
-        // GET: api/batterymodel/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -48,12 +45,10 @@ namespace EVSwapping.Controllers
             }
             catch (Exception ex)
             {
-                // You can log the exception here
                 return StatusCode(500, "An error occurred while retrieving the battery model.");
             }
         }
 
-        // POST: api/batterymodel
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] BatteryModel model)
         {
@@ -69,12 +64,10 @@ namespace EVSwapping.Controllers
             }
             catch (Exception ex)
             {
-                // You can log the exception here
                 return StatusCode(500, "An error occurred while adding the battery model.");
             }
         }
 
-        // PUT: api/batterymodel/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] BatteryModel model)
         {
@@ -86,27 +79,24 @@ namespace EVSwapping.Controllers
             try
             {
                 await _batteryModelService.Update(model);
-                return NoContent(); // 204 No Content
+                return NoContent();
             }
             catch (Exception ex)
             {
-                // You can log the exception here
                 return StatusCode(500, "An error occurred while updating the battery model.");
             }
         }
 
-        // DELETE: api/batterymodel/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             try
             {
                 await _batteryModelService.Delete(id);
-                return NoContent(); // 204 No Content
+                return NoContent();
             }
             catch (Exception ex)
             {
-                // You can log the exception here
                 return StatusCode(500, "An error occurred while deleting the battery model.");
             }
         }

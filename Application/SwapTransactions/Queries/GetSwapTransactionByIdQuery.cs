@@ -1,26 +1,30 @@
-﻿namespace Application.SwapTransactions.Queries
+﻿using Application.Common.Interfaces.Repositories;
+using Domain.Models;
+using MediatR;
+
+namespace Application.SwapTransactions.Queries
 {
-    //public record GetSwapTransactionByIdQuery(long SwapTransactionId) : IRequest<SwapTransaction>;
+    public record GetSwapTransactionByIdQuery(long SwapTransactionId) : IRequest<SwapTransaction>;
 
-    //public class GetSwapTransactionByIdQueryHandler : IRequestHandler<GetSwapTransactionByIdQuery, SwapTransaction>
-    //{
-    //    private readonly ISwapTransactionService _swapTransactionService;
+    public class GetSwapTransactionByIdQueryHandler : IRequestHandler<GetSwapTransactionByIdQuery, SwapTransaction>
+    {
+        private readonly ISwapTransactionRepository _swapTransactionService;
 
-    //    public GetSwapTransactionByIdQueryHandler(ISwapTransactionService swapTransactionService)
-    //    {
-    //        _swapTransactionService = swapTransactionService;
-    //    }
+        public GetSwapTransactionByIdQueryHandler(ISwapTransactionRepository swapTransactionService)
+        {
+            _swapTransactionService = swapTransactionService;
+        }
 
-    //    public async Task<SwapTransaction> Handle(GetSwapTransactionByIdQuery request, CancellationToken cancellationToken)
-    //    {
-    //        var transaction = await _swapTransactionService.GetById(request.SwapTransactionId);
+        public async Task<SwapTransaction> Handle(GetSwapTransactionByIdQuery request, CancellationToken cancellationToken)
+        {
+            var transaction = await _swapTransactionService.GetById(request.SwapTransactionId);
 
-    //        if (transaction == null)
-    //        {
-    //            throw new Exception("Swap transaction not found.");
-    //        }
+            if (transaction == null)
+            {
+                throw new Exception("Swap transaction not found.");
+            }
 
-    //        return transaction;
-    //    }
-    //}
+            return transaction;
+        }
+    }
 }

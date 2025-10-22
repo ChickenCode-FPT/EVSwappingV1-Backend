@@ -1,6 +1,9 @@
-﻿namespace Application.StationInventories.Queries
-{
-    //public record GetStationInventoryQuery(int StationId): IRequest<StationInventoryDto>;
+﻿using Application.Dtos;
+using MediatR;
 
-    //public record GetAllStationInventoriesQuery() : IRequest<IEnumerable<StationInventoryDto>>;
+namespace Application.StationInventories.Queries
+{
+    public record GetStationInventoryQuery(int StationId) : IRequest<StationInventoryDto>;
+
+    public record GetAllStationInventoriesQuery() : IRequest<IEnumerable<StationInventoryDto>>;
 }
