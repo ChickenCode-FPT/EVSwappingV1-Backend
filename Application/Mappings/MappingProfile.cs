@@ -80,6 +80,11 @@ namespace Application.Mappings
             CreateMap<Rating, RatingDto>().ReverseMap();
 
             CreateMap<SupportTicket, SupportTicketDto>().ReverseMap();
+            //batteryHealthLogs
+            CreateMap<BatteryHealthLog, BatteryHealthLogsDto>()
+                .ForMember(dest => dest.SerialNumber, opt => opt.MapFrom(src => src.Battery.SerialNumber));
+            CreateMap<CreateBatteryHealthLogDto, BatteryHealthLog>()
+               .ForMember(dest => dest.BatteryId, opt => opt.Ignore());
         }
     }
 }

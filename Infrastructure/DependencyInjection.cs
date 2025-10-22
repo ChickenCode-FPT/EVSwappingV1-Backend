@@ -104,6 +104,7 @@ namespace Infrastructure
             services.AddScoped<ISwapTransactionRepository, SwapTransactionRepository>();
             services.AddScoped<IReservationAllocationRepository, ReservationAllocationRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IBatteryHealthLogsRepository, BatteryHealthLogsRepository>();
 
             return services;
         }
