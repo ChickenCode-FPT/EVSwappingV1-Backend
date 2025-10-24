@@ -85,6 +85,17 @@ namespace Application.Mappings
                 .ForMember(dest => dest.SerialNumber, opt => opt.MapFrom(src => src.Battery.SerialNumber));
             CreateMap<CreateBatteryHealthLogDto, BatteryHealthLog>()
                .ForMember(dest => dest.BatteryId, opt => opt.Ignore());
+            //staionStaff
+            CreateMap<StationStaff, StationStaffDto>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+            //interStationTransfer
+            CreateMap<InterStationTransfer, InterStationTransferDto>()
+            .ForMember(dest => dest.FromStationName, opt => opt.MapFrom(src => src.FromStation.Name))
+            .ForMember(dest => dest.ToStationName, opt => opt.MapFrom(src => src.ToStation.Name))
+            .ForMember(dest => dest.BatteryCode, opt => opt.MapFrom(src => src.Battery.SerialNumber))
+            .ForMember(dest => dest.RequestedByUserName, opt => opt.MapFrom(src => src.RequestedByUser.UserName))
+            .ForMember(dest => dest.ApprovedByUserName, opt => opt.MapFrom(src => src.ApprovedByUser.UserName));
+
         }
     }
 }

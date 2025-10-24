@@ -31,7 +31,8 @@ namespace Application
             services.AddScoped<IRatingService, RatingService>();
             services.AddScoped<ISupportTicketService, SupportTicketService>();
             services.AddScoped<IBatteryHealthlogsService,BatteryHealthLogsService>();
-
+            services.AddScoped<IStationStaffService, StationStaffService>();
+            services.AddScoped<IInterStationTransferService, InterStationTransferService>();
             return services;
         }
     }
