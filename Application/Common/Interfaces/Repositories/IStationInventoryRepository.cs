@@ -20,6 +20,8 @@ namespace Application.Common.Interfaces.Repositories
 
         Task<IEnumerable<Battery>> GetFullBatteriesByModel(int stationId, int batteryModelId);
 
+        Task<List<int>> GetFullBatteryIdsByModel(int stationId, int batteryModelId);
+
         Task MarkHeld(int batteryId, int stationId, int? reservationId = null);
 
         Task MarkFull(int batteryId, int stationId);

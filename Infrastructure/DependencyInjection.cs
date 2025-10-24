@@ -65,19 +65,15 @@ namespace Infrastructure
 
             services.AddQuartz(q =>
             {
-                var reservationJobKey = new JobKey("ReservationStatusUpdaterJob");
-                q.AddJob<ReservationStatusUpdaterJob>(opts => opts.WithIdentity(reservationJobKey));
-                q.AddTrigger(opts => opts
-                    .ForJob(reservationJobKey)
-                    .WithIdentity("ReservationStatusUpdaterJob-trigger")
-                    .WithCronSchedule("0 */1 * * * ?")); // 10
+                var jobKey = new JobKey("ExpireAndHoldBackgroundService");
+                q.AddJob<ExpireAndHoldBackgroundService>(opts => opts.WithIdentity(jobKey));
 
-                var releaseJobKey = new JobKey("ExpiredReservationReleaseJob");
-                q.AddJob<ExpiredReservationReleaseJob>(opts => opts.WithIdentity(releaseJobKey));
                 q.AddTrigger(opts => opts
-                    .ForJob(releaseJobKey)
-                    .WithIdentity("ExpiredReservationReleaseJob-trigger")
-                    .WithCronSchedule("0 */1 * * * ?"));  // 5
+                    .ForJob(jobKey)
+                    .WithIdentity("ExpireAndHoldBackgroundService-trigger")
+                    .WithSimpleSchedule(x => x
+                        .WithIntervalInMinutes(1)  
+                        .RepeatForever()));
             });
 
             services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true);

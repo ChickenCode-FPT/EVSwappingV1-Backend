@@ -75,6 +75,27 @@ namespace Infrastructure.Persistance.Repositories
                 .ToListAsync();
         }
 
+        public async Task<HashSet<int>> GetOverlappingBatteryIds(IEnumerable<int> batteryIds, DateTime fromUtc, DateTime toUtc)
+        {
+            return (await _context.ReservationAllocations
+                .Where(a => a.Status == "Active"
+                    && batteryIds.Contains(a.BatteryId)
+                    && a.HoldUntil > fromUtc
+                    && a.Reservation.ReservedFrom < toUtc)
+                .Select(a => a.BatteryId)
+                .Distinct()
+                .ToListAsync()).ToHashSet();
+        }
+
+        public async Task<bool> IsBatteryFreeInWindow(int batteryId, DateTime fromUtc, DateTime toUtc)
+        {
+            return !await _context.ReservationAllocations.AnyAsync(a =>
+                a.BatteryId == batteryId &&
+                a.Status == "Active" &&
+                a.HoldUntil > fromUtc &&
+                a.Reservation.ReservedFrom < toUtc);
+        }
+
         public async Task SaveChanges() => await _context.SaveChangesAsync();
     }
 }

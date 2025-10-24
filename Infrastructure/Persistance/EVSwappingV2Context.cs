@@ -75,22 +75,36 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
 
         modelBuilder.Entity<Battery>(entity =>
         {
-            entity.HasKey(e => e.BatteryId).HasName("PK__Batterie__5710805E39AB72DF");
+            entity.HasKey(e => e.BatteryId)
+                  .HasName("PK__Batterie__5710805E39AB72DF");
 
-            entity.HasIndex(e => e.SerialNumber, "UQ__Batterie__048A00086C7A125E").IsUnique();
+            entity.HasIndex(e => e.SerialNumber, "UQ__Batterie__048A00086C7A125E")
+                  .IsUnique();
 
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
-            entity.Property(e => e.CurrentSoH).HasColumnType("decimal(5, 2)");
-            entity.Property(e => e.CycleCount).HasDefaultValue(0);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(SYSUTCDATETIME())");
+
+            entity.Property(e => e.CurrentSoH)
+                .HasColumnType("decimal(5, 2)");
+
+            entity.Property(e => e.CycleCount)
+                .HasDefaultValue(0);
+
             entity.Property(e => e.SerialNumber)
                 .IsRequired()
                 .HasMaxLength(200);
+
             entity.Property(e => e.Status)
                 .IsRequired()
                 .HasMaxLength(50)
-                .HasDefaultValue("Available");
+                .HasDefaultValue("Full");
 
-            entity.HasOne(d => d.BatteryModel).WithMany(p => p.Batteries)
+            entity.Property(e => e.RowVersion)
+                .IsRowVersion()
+                .IsConcurrencyToken();
+
+            entity.HasOne(d => d.BatteryModel)
+                .WithMany(p => p.Batteries)
                 .HasForeignKey(d => d.BatteryModelId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Batteries__Batte__59FA5E80");
@@ -313,12 +327,19 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
 
         modelBuilder.Entity<ReservationAllocation>(entity =>
         {
-            entity.ToTable("ReservationAllocations"); 
+            entity.ToTable("ReservationAllocations");
             entity.HasKey(e => e.ReservationAllocationId);
 
             entity.Property(e => e.Status)
                 .IsRequired()
-                .HasMaxLength(50);
+                .HasMaxLength(50)
+                .HasDefaultValue("Active");
+
+            entity.Property(e => e.AllocatedAt)
+                .HasDefaultValueSql("(SYSUTCDATETIME())");
+
+            entity.Property(e => e.HoldUntil)
+                .IsRequired();
 
             entity.HasOne(e => e.Reservation)
                 .WithMany(r => r.ReservationAllocations)
@@ -330,7 +351,11 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
                 .HasForeignKey(e => e.BatteryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasIndex(e => new { e.BatteryId, e.Status });
+            entity.HasIndex(e => new { e.BatteryId, e.Status })
+                .IsUnique()
+                .HasFilter("[Status] = 'Active'");
+
+            entity.HasIndex(e => new { e.ReservationId, e.Status });
         });
 
         modelBuilder.Entity<StationStaff>(entity =>

@@ -2,6 +2,7 @@
 using Domain.Enums;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Infrastructure.Persistance.Repositories
 {
@@ -81,6 +82,11 @@ namespace Infrastructure.Persistance.Repositories
                 res.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
         }
 
         public async Task SaveChanges() => await _context.SaveChangesAsync();
