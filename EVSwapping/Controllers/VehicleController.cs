@@ -1,9 +1,11 @@
 ﻿using Application.Common.Interfaces.Services;
 using Application.Dtos.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EVSwapping.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class VehicleController : ControllerBase
@@ -23,10 +25,10 @@ namespace EVSwapping.Controllers
             return Ok(vehicle);
         }
 
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetByUser(string userId)
+        [HttpGet("me")]
+        public async Task<IActionResult> GetByCurrentUser()
         {
-            var vehicles = await _vehicleService.GetByUser(userId);
+            var vehicles = await _vehicleService.GetByUser();
             return Ok(vehicles);
         }
 

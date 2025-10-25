@@ -1,4 +1,5 @@
 ﻿using Domain.Models;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Application.Common.Interfaces.Repositories
 {
@@ -10,5 +11,9 @@ namespace Application.Common.Interfaces.Repositories
         Task Add(Reservation reservation);
         Task Update(Reservation reservation);
         Task Cancel(int reservationId);
+        Task<IEnumerable<Reservation>> GetPendingReservations();
+        Task UpdateStatus(int reservationId, string newStatus);
+        Task<IDbContextTransaction> BeginTransactionAsync();
+        Task SaveChanges();
     }
 }

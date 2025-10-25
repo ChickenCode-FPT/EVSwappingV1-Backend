@@ -6,6 +6,6 @@ namespace Application.Common.Interfaces.Services
     {
         Task<ReservationDto> CreateReservation(CreateReservationRequest request);
         Task CancelReservation(CancelReservationRequest request);
-        Task<IEnumerable<ReservationDto>> GetReservationsByUser(string userId);
+        Task<IEnumerable<ReservationDto>> GetMyReservations();
     }
 }

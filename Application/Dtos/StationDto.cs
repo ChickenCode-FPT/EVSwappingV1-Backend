@@ -11,5 +11,7 @@
         public string Phone { get; set; } = string.Empty;
         public byte Status { get; set; }
         public int AvailableBatteries { get; set; }
+        public double DistanceKm { get; set; }
+        public double DurationMin { get; set; }
     }
 }

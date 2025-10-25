@@ -13,13 +13,17 @@ public partial class StationInventory
 
     public int BatteryId { get; set; }
 
-    public string SlotNumber { get; set; } = string.Empty;
+    public string SlotNumber { get; set; }
 
-    public string Status { get; set; } = string.Empty;
+    public string Status { get; set; }
 
     public DateTime? CheckedAt { get; set; }
 
-    public virtual Battery Battery { get; set; } = default!;
+    public virtual Battery Battery { get; set; }
 
-    public virtual Station Station { get; set; } = default!;
+    public virtual Station Station { get; set; }
+
+    public int? ReservationId { get; set; }   
+
+    public virtual Reservation? Reservation { get; set; }
 }

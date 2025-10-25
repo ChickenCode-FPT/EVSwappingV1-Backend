@@ -22,6 +22,7 @@ public partial class Battery
     public DateTime? LastMaintenance { get; set; }
 
     public DateTime CreatedAt { get; set; }
+    public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
     public virtual ICollection<BatteryHealthLog> BatteryHealthLogs { get; set; } = new List<BatteryHealthLog>();
 
@@ -34,4 +35,5 @@ public partial class Battery
     public virtual ICollection<SwapTransaction> SwapTransactionIncomingBatteries { get; set; } = new List<SwapTransaction>();
 
     public virtual ICollection<SwapTransaction> SwapTransactionOutgoingBatteries { get; set; } = new List<SwapTransaction>();
+    public virtual ICollection<ReservationAllocation> ReservationAllocations { get; set; } = new List<ReservationAllocation>();
 }

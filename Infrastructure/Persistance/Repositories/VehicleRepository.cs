@@ -15,8 +15,9 @@ namespace Infrastructure.Persistance.Repositories
 
         public async Task<Vehicle?> GetById(int vehicleId)
         {
-            return await _context.Vehicles.Include(v => v.BatteryModelPreference)
-                                   .FirstOrDefaultAsync(v => v.VehicleId == vehicleId);
+            return await _context.Vehicles
+                .Include(v => v.BatteryModelPreference)
+                .FirstOrDefaultAsync(v => v.VehicleId == vehicleId);
         }
 
         public async Task<IEnumerable<Vehicle>> GetByUserId(string userId)

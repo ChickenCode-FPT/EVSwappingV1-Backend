@@ -9,5 +9,6 @@ namespace Application.Common.Interfaces.Repositories
         Task UpdateStatus(int batteryId, string status);
         Task Add(Battery battery);
         Task Update(Battery battery);
+        Task<List<Battery>> GetAll();
     }
 }
