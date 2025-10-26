@@ -87,7 +87,8 @@ namespace Application.Mappings
                .ForMember(dest => dest.BatteryId, opt => opt.Ignore());
             //staionStaff
             CreateMap<StationStaff, StationStaffDto>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email));
             //interStationTransfer
             CreateMap<InterStationTransfer, InterStationTransferDto>()
             .ForMember(dest => dest.FromStationName, opt => opt.MapFrom(src => src.FromStation.Name))
