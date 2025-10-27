@@ -19,8 +19,6 @@ namespace Application
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IBatteryModelService, BatteryModelService>();
 
-            services.AddAutoMapper(typeof(AppProfile));
-
             services.AddScoped<IDriverService, DriverService>();
             services.AddScoped<ISubscriptionService, SubscriptionService>();
             services.AddScoped<ISubscriptionPackageService, SubscriptionPackageService>();
@@ -30,6 +28,7 @@ namespace Application
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IRatingService, RatingService>();
             services.AddScoped<ISupportTicketService, SupportTicketService>();
+            services.AddScoped<ISwapTransactionService, SwapTransactionService>();
 
             return services;
         }

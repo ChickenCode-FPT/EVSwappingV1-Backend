@@ -2,6 +2,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using Domain.Enums;
 
 namespace Domain.Models;
 
@@ -25,27 +26,31 @@ public partial class SwapTransaction
 
     public DateTime? SwapFinishedAt { get; set; }
 
-    public string SwapStatus { get; set; } = string.Empty;
+    public string SwapStatus { get; set; } = Domain.Enums.SwapStatus.Pending;
 
     public decimal Price { get; set; }
 
     public string Notes { get; set; } = string.Empty;
 
+    public string PaymentType { get; set; } = Domain.Enums.PaymentType.SwapFee;
+
+    public bool IsPenalty { get; set; } = false;
+
     public DateTime CreatedAt { get; set; }
 
     public virtual User CustomerUser { get; set; } = default!;
 
-    public virtual Battery IncomingBattery { get; set; } = default!;
+    public virtual User? StaffUser { get; set; }
 
-    public virtual Battery OutgoingBattery { get; set; } = default!;
+    public virtual Station Station { get; set; } = default!;
+
+    public virtual Reservation? Reservation { get; set; }
+
+    public virtual Battery? IncomingBattery { get; set; }
+
+    public virtual Battery? OutgoingBattery { get; set; }
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
     public virtual ICollection<Rating> Ratings { get; set; } = new List<Rating>();
-
-    public virtual Reservation Reservation { get; set; } = default!;
-
-    public virtual User StaffUser { get; set; } = default!;
-
-    public virtual Station Station { get; set; } = default!;
 }

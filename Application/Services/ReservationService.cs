@@ -1,4 +1,5 @@
-﻿using Application.Common.Interfaces.Repositories;
+﻿using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
 using Application.Common.Interfaces.Services.Application.Common.Interfaces.Services;
 using Application.Dtos;
@@ -15,6 +16,8 @@ namespace Application.Services
         private readonly IReservationAllocationRepository _reservationAllocationRepo;
         private readonly IUserRepository _userRepo;
         private readonly ICurrentUserService _currentUser;
+        private readonly ISubscriptionRepository _subscriptionRepo;
+        private readonly IPaymentService _paymentService;
         private readonly IMapper _mapper;
 
         public ReservationService(
@@ -23,6 +26,8 @@ namespace Application.Services
             IReservationAllocationRepository reservationAllocationRepo,
             IUserRepository userRepo,
             ICurrentUserService currentUser,
+            ISubscriptionRepository subscriptionRepo,
+            IPaymentService paymentService,
             IMapper mapper)
         {
             _reservationRepo = reservationRepo;
@@ -30,6 +35,8 @@ namespace Application.Services
             _reservationAllocationRepo = reservationAllocationRepo;
             _userRepo = userRepo;
             _currentUser = currentUser;
+            _subscriptionRepo = subscriptionRepo;
+            _paymentService = paymentService;
             _mapper = mapper;
         }
 
@@ -50,6 +57,7 @@ namespace Application.Services
 
             if (vehicle == null)
                 throw new InvalidOperationException("Bạn chưa có phương tiện hợp lệ.");
+
             if (vehicle.BatteryModelPreferenceId == null)
                 throw new InvalidOperationException("Phương tiện của bạn chưa được gán model pin phù hợp.");
 
@@ -57,8 +65,8 @@ namespace Application.Services
             var fromUtc = request.ReservedFrom.ToUniversalTime();
             var toUtc = request.ReservedTo.ToUniversalTime();
 
-            if (toUtc <= fromUtc) throw new InvalidOperationException("Thời gian đặt không hợp lệ.");
-
+            if (toUtc <= fromUtc)
+                throw new InvalidOperationException("Thời gian đặt không hợp lệ.");
             if ((toUtc - fromUtc).TotalMinutes > 90)
                 throw new InvalidOperationException("Thời lượng đặt tối đa là 90 phút.");
             if (fromUtc < DateTime.UtcNow.AddMinutes(10))
@@ -70,59 +78,101 @@ namespace Application.Services
                                   r.ReservedTo > fromUtc))
                 throw new InvalidOperationException("Bạn đã có lịch trùng thời gian.");
 
-            using var transaction = await _reservationRepo.BeginTransactionAsync(); 
-            try
+            var sub = (await _subscriptionRepo.GetByUser(userId))
+                .FirstOrDefault(s => s.Status == SubscriptionStatus.Active && s.EndDate >= DateTime.UtcNow);
+
+            Reservation reservation;
+            ReservationAllocation allocation;
+
+            using (var transaction = await _reservationRepo.BeginTransactionAsync())
             {
-                var candidateIds = await _inventoryRepo.GetFullBatteryIdsByModel(request.StationId, modelId);
-                if (!candidateIds.Any())
-                    throw new InvalidOperationException("Không còn pin đầy phù hợp.");
-
-                var overlappingIds = await _reservationAllocationRepo
-                    .GetOverlappingBatteryIds(candidateIds, fromUtc, toUtc);
-
-                var freeBatteryId = candidateIds.Except(overlappingIds).FirstOrDefault();
-                if (freeBatteryId == 0)
-                    throw new InvalidOperationException("Tất cả pin phù hợp đang được giữ. Vui lòng chọn khung giờ khác.");
-
-                var stillFree = await _reservationAllocationRepo
-                    .IsBatteryFreeInWindow(freeBatteryId, fromUtc, toUtc);
-                if (!stillFree)
-                    throw new InvalidOperationException("Pin vừa được giữ bởi người khác. Thử lại.");
-
-                var reservation = new Reservation
+                try
                 {
-                    UserId = userId,
-                    StationId = request.StationId,
-                    VehicleId = vehicle.VehicleId,
-                    ReservedFrom = fromUtc,
-                    ReservedTo = toUtc,
-                    ReservedBatteryModelId = modelId,
-                    Status = ReservationStatus.Pending,
-                    CreatedAt = DateTime.UtcNow
-                };
-                await _reservationRepo.Add(reservation);
+                    var candidateIds = await _inventoryRepo.GetFullBatteryIdsByModel(request.StationId, modelId);
+                    if (!candidateIds.Any())
+                        throw new InvalidOperationException("Không còn pin đầy phù hợp.");
 
-                var allocation = new ReservationAllocation
+                    var overlappingIds = await _reservationAllocationRepo
+                        .GetOverlappingBatteryIds(candidateIds, fromUtc, toUtc);
+
+                    var freeBatteryId = candidateIds.Except(overlappingIds).FirstOrDefault();
+                    if (freeBatteryId == 0)
+                        throw new InvalidOperationException("Tất cả pin phù hợp đang được giữ. Vui lòng chọn khung giờ khác.");
+
+                    var stillFree = await _reservationAllocationRepo
+                        .IsBatteryFreeInWindow(freeBatteryId, fromUtc, toUtc);
+                    if (!stillFree)
+                        throw new InvalidOperationException("Pin vừa được giữ bởi người khác. Thử lại.");
+
+                    reservation = new Reservation
+                    {
+                        UserId = userId,
+                        StationId = request.StationId,
+                        VehicleId = vehicle.VehicleId,
+                        ReservedFrom = fromUtc,
+                        ReservedTo = toUtc,
+                        ReservedBatteryModelId = modelId,
+                        Status = ReservationStatus.Pending,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await _reservationRepo.Add(reservation);
+
+                    allocation = new ReservationAllocation
+                    {
+                        ReservationId = reservation.ReservationId,
+                        BatteryId = freeBatteryId,
+                        AllocatedAt = DateTime.UtcNow,
+                        HoldUntil = fromUtc.AddMinutes(15),
+                        Status = ReservationAllocationStatus.Active
+                    };
+                    await _reservationAllocationRepo.Add(allocation);
+
+                    await transaction.CommitAsync();
+                }
+                catch
                 {
-                    ReservationId = reservation.ReservationId,
-                    BatteryId = freeBatteryId,
-                    AllocatedAt = DateTime.UtcNow,
-                    HoldUntil = fromUtc.AddMinutes(15),
-                    Status = ReservationAllocationStatus.Active
-                };
-                await _reservationAllocationRepo.Add(allocation);
-
-                await transaction.CommitAsync();
-
-                var dto = _mapper.Map<ReservationDto>(reservation);
-                dto.Allocation = _mapper.Map<ReservationAllocationDto>(allocation);
-                return dto;
+                    throw;
+                }
             }
-            catch
+
+            var dto = _mapper.Map<ReservationDto>(reservation);
+            dto.Allocation = _mapper.Map<ReservationAllocationDto>(allocation);
+
+            if (sub == null)
             {
-                await transaction.RollbackAsync();
-                throw;
+                try
+                {
+                    var paymentDto = new PaymentCreateDto
+                    {
+                        UserId = userId,
+                        ReservationId = reservation.ReservationId,
+                        Type = PaymentType.ReservationDeposit,
+                        Amount = 50000,
+                        Currency = "VND",
+                        Description = $"Deposit for reservation #{reservation.ReservationId}",
+                        Method = "VNPAY"
+                    };
+
+                    var paymentResponse = await _paymentService.CreatePayment(paymentDto);
+                    dto.PaymentCheckoutUrl = paymentResponse.CheckoutUrl;
+                    dto.PaymentId = paymentResponse.PaymentId;
+                    dto.PaymentStatus = paymentResponse.Status;
+                }
+                catch (Exception ex)
+                {
+                    reservation.Status = ReservationStatus.Cancelled;
+                    await _reservationRepo.Update(reservation);
+                    throw new InvalidOperationException($"Không thể tạo thanh toán đặt cọc: {ex.Message}", ex);
+                }
             }
+            else
+            {
+                reservation.Status = ReservationStatus.Confirmed;
+                await _reservationRepo.Update(reservation);
+                dto.Status = reservation.Status;
+            }
+
+            return dto;
         }
 
         public async Task CancelReservation(CancelReservationRequest request)

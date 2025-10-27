@@ -16,6 +16,6 @@ namespace Application.Batteries.Queries
         {
             //return await _repo.GetByStatus(request.Status);
             return null;
-        } 
+        }
     }
 }

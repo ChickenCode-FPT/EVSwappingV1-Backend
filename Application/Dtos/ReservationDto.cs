@@ -10,6 +10,9 @@
         public DateTime ReservedTo { get; set; }
         public string Status { get; set; } = string.Empty;
         public int? ReservedBatteryModelId { get; set; }
+        public string? PaymentCheckoutUrl { get; set; }
+        public long? PaymentId { get; set; }
+        public string? PaymentStatus { get; set; }
         public ReservationAllocationDto? Allocation { get; set; }
     }
 }

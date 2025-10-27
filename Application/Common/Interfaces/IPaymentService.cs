@@ -5,13 +5,15 @@ namespace Application.Common.Interfaces
 {
     public interface IPaymentService
     {
-        Task AddPayment(Payment payment);
-        Task<PaymentAndTranDto?> GetPaymentById(int id);
-        Task<List<Payment>> GetAllPayments();
-        Task UpdatePayment(int id, PaymentUpdateDto dto);
-        Task DeletePayment(int id);
-        Task<IEnumerable<PaymentAndTranDto>> GetFilterWithSwapt();
-
-        Task HandleReturnTransactionAsync(int swapTransactionId, int batteryId, string returnCondition);
+        Task<PaymentResponseDto> CreatePayment(PaymentCreateDto dto);
+        Task<PaymentResponseDto> CreateRefund(RefundRequestDto dto);
+        Task<PaymentResponseDto> CreatePenalty(PenaltyPaymentDto dto);
+        Task SyncPendingPaymentsAsync();
+        Task UpdateLinkedEntitiesAfterPayment(Payment payment);
+        Task<IEnumerable<Payment>> GetAllPayments();
+        Task<PaymentAndTranDto?> GetPaymentById(long id);
+        Task<IEnumerable<PaymentSummaryDto>> GetUserPayments(string userId);
+        Task<PaymentResponseDto?> HandleWebhook(PaymentWebhookDto dto);
+        Task<PaymentResponseDto?> UpdatePaymentStatus(PaymentStatusUpdateDto dto);
     }
 }

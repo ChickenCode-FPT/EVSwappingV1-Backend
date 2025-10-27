@@ -3,6 +3,7 @@ using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
 using Application.Common.Interfaces.Services.Application.Common.Interfaces.Services;
 using Application.Common.IRespositories;
+using Application.Interfaces.Repositories;
 using Domain.Models;
 using Infrastructure.Jobs;
 using Infrastructure.Persistance.Repositories;
@@ -65,15 +66,45 @@ namespace Infrastructure
 
             services.AddQuartz(q =>
             {
-                var jobKey = new JobKey("ExpireAndHoldBackgroundService");
-                q.AddJob<ExpireAndHoldBackgroundService>(opts => opts.WithIdentity(jobKey));
-
+                var expireJob = new JobKey("ExpireAndHoldBackgroundService");
+                q.AddJob<ExpireAndHoldBackgroundService>(opts => opts.WithIdentity(expireJob));
                 q.AddTrigger(opts => opts
-                    .ForJob(jobKey)
+                    .ForJob(expireJob)
                     .WithIdentity("ExpireAndHoldBackgroundService-trigger")
                     .WithSimpleSchedule(x => x
-                        .WithIntervalInMinutes(1)  
+                        .WithIntervalInMinutes(1) 
+                        //.WithIntervalInMinutes(1) 
                         .RepeatForever()));
+
+                var refundJob = new JobKey("RefundProcessorJob");
+                q.AddJob<RefundProcessorJob>(opts => opts.WithIdentity(refundJob));
+                q.AddTrigger(opts => opts
+                    .ForJob(refundJob)
+                    .WithIdentity("RefundProcessor-trigger")
+                    .WithSimpleSchedule(x => x
+                        .WithIntervalInMinutes(1) 
+                        //.WithIntervalInMinutes(15) 
+                        .RepeatForever()));
+
+                var overdueJob = new JobKey("OverdueFeeJob");
+                q.AddJob<OverdueFeeJob>(opts => opts.WithIdentity(overdueJob));
+                q.AddTrigger(opts => opts
+                    .ForJob(overdueJob)
+                    .WithIdentity("OverdueFeeJob-trigger")
+                    .WithSimpleSchedule(x => x
+                        .WithIntervalInMinutes(1) 
+                        //.WithIntervalInHours(1) 
+                        .RepeatForever()));
+
+                //var syncJob = new JobKey("PaymentSyncJob");
+                //q.AddJob<PaymentSyncJob>(opts => opts.WithIdentity(syncJob));
+                //q.AddTrigger(opts => opts
+                //    .ForJob(syncJob)
+                //    .WithIdentity("PaymentSync-trigger")
+                //    .WithSimpleSchedule(x => x
+                //        .WithIntervalInMinutes(1) 
+                //        //.WithIntervalInMinutes(10) 
+                //        .RepeatForever()));
             });
 
             services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true);
@@ -100,6 +131,8 @@ namespace Infrastructure
             services.AddScoped<ISwapTransactionRepository, SwapTransactionRepository>();
             services.AddScoped<IReservationAllocationRepository, ReservationAllocationRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IPayOSClient, PayOSClient>();
+            services.AddScoped<IPaymentGatewayClient, VnpayClient>();
 
             return services;
         }

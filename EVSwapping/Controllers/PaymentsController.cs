@@ -1,128 +1,108 @@
 ﻿using Application.Common.Interfaces;
 using Application.Dtos;
-using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EVSwapping.Controllers
 {
     [ApiController]
-    [Route("api/payments")]
+    [Route("api/[controller]")]
     public class PaymentsController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
+        private readonly ILogger<PaymentsController> _logger;
 
-        public PaymentsController(IPaymentService paymentService)
+        public PaymentsController(IPaymentService paymentService, ILogger<PaymentsController> logger)
         {
             _paymentService = paymentService;
+            _logger = logger;
         }
 
-        // POST: api/payments
-        [HttpPost]
-        public async Task<IActionResult> AddPayment([FromBody] Payment payment)
+        [HttpPost("create")]
+        public async Task<IActionResult> CreatePayment([FromBody] PaymentCreateDto dto)
         {
-            if (payment == null)
-            {
-                return BadRequest("Payment cannot be null");
-            }
-
-            try
-            {
-                await _paymentService.AddPayment(payment);
-                return CreatedAtAction(nameof(GetPaymentById), new { id = payment.PaymentId }, payment);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"An error occurred: {ex.Message}");
-            }
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var result = await _paymentService.CreatePayment(dto);
+            return Ok(result);
         }
 
-        // GET: api/payments/{id}
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetPaymentById(int id)
+        [HttpPost("penalty")]
+        public async Task<IActionResult> CreatePenalty([FromBody] PenaltyPaymentDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var result = await _paymentService.CreatePenalty(dto);
+            return Ok(result);
+        }
+
+        [HttpPost("refund")]
+        public async Task<IActionResult> CreateRefund([FromBody] RefundRequestDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var result = await _paymentService.CreateRefund(dto);
+            return Ok(result);
+        }
+
+        [HttpGet("vnpay-callback")]
+        public async Task<IActionResult> VnpayCallback()
+        {
+            var query = Request.Query;
+            var dto = new PaymentWebhookDto
+            {
+                OrderCode = query["vnp_TxnRef"],
+                Status = query["vnp_ResponseCode"] == "00" ? "PAID" : "FAILED",
+                Amount = decimal.Parse(query["vnp_Amount"]) / 100,
+                Signature = query["vnp_SecureHash"],
+                RawData = query.ToString()
+            };
+
+            var result = await _paymentService.HandleWebhook(dto);
+            if (result == null)
+                return NotFound(new { message = "Payment not found for VNPAY transaction." });
+
+            return Redirect($"https://app.ev-swap.vn/payment-success?order={dto.OrderCode}&status={dto.Status}");
+        }
+
+        [HttpPost("sync")]
+        public async Task<IActionResult> SyncPendingPayments()
+        {
+            await _paymentService.SyncPendingPaymentsAsync();
+            return Ok(new { message = "Pending payments synchronized successfully." });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllPayments() => Ok(await _paymentService.GetAllPayments());
+
+        [HttpGet("{id:long}")]
+        public async Task<IActionResult> GetPaymentById(long id)
         {
             var payment = await _paymentService.GetPaymentById(id);
-            if (payment == null)
-            {
-                return NotFound();
-            }
-            return Ok(payment);
+            return payment == null ? NotFound() : Ok(payment);
         }
 
-        // GET: api/payments
-        [HttpGet]
-        public async Task<IActionResult> GetAllPayments()
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetUserPayments(string userId)
+            => Ok(await _paymentService.GetUserPayments(userId));
+
+        [HttpPost("update-status")]
+        public async Task<IActionResult> UpdateStatus([FromBody] PaymentStatusUpdateDto dto)
         {
-            var payments = await _paymentService.GetAllPayments();
-            return Ok(payments);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var result = await _paymentService.UpdatePaymentStatus(dto);
+
+            if (result == null)
+                return NotFound(new { message = "Payment not found." });
+
+            return Ok(result);
         }
 
-        [HttpGet("filter")]
-        public async Task<IActionResult> GetAllAndSwap()
+        [HttpGet("ping")]
+        public IActionResult Ping() => Ok(new
         {
-            var payments = await _paymentService.GetFilterWithSwapt();
-            return Ok(payments);
-        }
-
-        // PUT: api/payments/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePayment(int id, [FromBody] PaymentUpdateDto payment)
-        {
-            if (id != payment.PaymentId)
-            {
-                return BadRequest("Payment ID mismatch");
-            }
-
-            try
-            {
-                await _paymentService.UpdatePayment(id, payment);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"An error occurred: {ex.Message}");
-            }
-        }
-
-        // DELETE: api/payments/{id}
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePayment(int id)
-        {
-            try
-            {
-                await _paymentService.DeletePayment(id);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"An error occurred: {ex.Message}");
-            }
-        }
-
-        // POST: api/payments/return
-        [HttpPost("return")]
-        public async Task<IActionResult> HandleReturnTransaction([FromBody] ReturnTransactionDto dto)
-        {
-            if (dto == null || dto.SwapTransactionId <= 0 || dto.BatteryId <= 0)
-            {
-                return BadRequest("Invalid request data");
-            }
-
-            try
-            {
-                await _paymentService.HandleReturnTransactionAsync(dto.SwapTransactionId, dto.BatteryId, dto.ReturnCondition);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"An error occurred: {ex.Message}");
-            }
-        }
-
-        public class ReturnTransactionDto
-        {
-            public int SwapTransactionId { get; set; }
-            public int BatteryId { get; set; }
-            public string ReturnCondition { get; set; }
-        }
+            service = "PaymentService",
+            version = "v3.0",
+            gateway = "VNPAY",
+            timestamp = DateTime.UtcNow,
+            message = "Payment system operational (VNPAY integrated)."
+        });
     }
 }
