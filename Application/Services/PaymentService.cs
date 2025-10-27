@@ -57,9 +57,10 @@ namespace Application.Services
             var gatewayResp = await _gateway.CreatePaymentRequestAsync(payment);
 
             if (!string.IsNullOrEmpty(gatewayResp.GatewayOrderCode))
-            {
                 payment.PayOSOrderCode = gatewayResp.GatewayOrderCode;
-            }
+
+            if (!string.IsNullOrEmpty(gatewayResp.CheckoutUrl))
+                payment.CheckoutUrl = gatewayResp.CheckoutUrl;  
 
             await _paymentRepo.Update(payment);
             await _paymentRepo.SaveChanges();

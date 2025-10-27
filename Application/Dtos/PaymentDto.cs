@@ -11,6 +11,7 @@ namespace Application.Dtos
         public string? Method { get; set; }
         public string Status { get; set; } = "Pending";
         public DateTime? PaidAt { get; set; }
+        public string? CheckoutUrl { get; set; }
     }
 
     public class PaymentAndTranDto
@@ -22,6 +23,7 @@ namespace Application.Dtos
         public string? Method { get; set; }
         public string Status { get; set; } = "Pending";
         public DateTime? PaidAt { get; set; }
+        public string? CheckoutUrl { get; set; }
         public TranscationDto Transcation { get; set; } = new();
     }
 

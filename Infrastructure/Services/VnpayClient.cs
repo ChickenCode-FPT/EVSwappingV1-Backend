@@ -30,7 +30,7 @@ namespace Infrastructure.Services
             _vnpTmnCode = _config["Vnpay:TmnCode"] ?? throw new ArgumentNullException("Vnpay:TmnCode");
             _vnpHashSecret = _config["Vnpay:HashSecret"] ?? throw new ArgumentNullException("Vnpay:HashSecret");
             _vnpBaseUrl = _config["Vnpay:BaseUrl"] ?? "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-            _vnpReturnUrl = _config["Vnpay:ReturnUrl"] ?? "https://localhost:5001/api/payments/vnpay-callback";
+            _vnpReturnUrl = _config["Vnpay:ReturnUrl"] ?? "http://localhost:4200/payment/result";
             _vnpApiUrl = _config["Vnpay:ApiUrl"] ?? "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
         }
 
@@ -38,7 +38,7 @@ namespace Infrastructure.Services
         {
             var createDate = DateTime.Now.ToString("yyyyMMddHHmmss");
             var expireDate = DateTime.Now.AddMinutes(15).ToString("yyyyMMddHHmmss");
-            var orderRef = payment.PaymentId.ToString();
+            var orderRef = payment.TransactionRef;
 
             var vnp_Params = new SortedList<string, string>
             {

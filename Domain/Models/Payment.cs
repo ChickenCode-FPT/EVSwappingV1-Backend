@@ -32,6 +32,8 @@ public partial class Payment
 
     public string? PayOSOrderCode { get; set; }
 
+    public string? CheckoutUrl { get; set; }
+
     public string? Description { get; set; }
 
     public DateTime? PaidAt { get; set; }

@@ -58,16 +58,28 @@ namespace Application.Mappings
                 .ForMember(dest => dest.AvailableBatteries, opt => opt.Ignore());
 
             CreateMap<Battery, BatteryDto>();
+
             //station
             CreateMap<Station, StationInSwapDto>().ReverseMap();
 
             CreateMap<Reservation, ReservationDto>()
                 .ForMember(dest => dest.Allocation,
                     opt => opt.MapFrom(src => src.ReservationAllocations.FirstOrDefault()))
-                .ForMember(dest => dest.PaymentCheckoutUrl, opt => opt.Ignore())
-                .ForMember(dest => dest.PaymentId, opt => opt.Ignore())
-                .ForMember(dest => dest.PaymentStatus, opt => opt.Ignore())
-                .ReverseMap();
+                .ForMember(dest => dest.PaymentCheckoutUrl,
+                    opt => opt.MapFrom(src => src.Payments
+                        .OrderByDescending(p => p.CreatedAt)
+                        .Select(p => p.CheckoutUrl)
+                        .FirstOrDefault()))
+                .ForMember(dest => dest.PaymentId,
+                    opt => opt.MapFrom(src => src.Payments
+                        .OrderByDescending(p => p.CreatedAt)
+                        .Select(p => (long?)p.PaymentId)
+                        .FirstOrDefault()))
+                .ForMember(dest => dest.PaymentStatus,
+                    opt => opt.MapFrom(src => src.Payments
+                        .OrderByDescending(p => p.CreatedAt)
+                        .Select(p => p.Status)
+                        .FirstOrDefault()));
 
             CreateMap<ReservationAllocation, ReservationAllocationDto>().ReverseMap();
 

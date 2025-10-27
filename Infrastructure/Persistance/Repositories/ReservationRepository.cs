@@ -68,6 +68,7 @@ namespace Infrastructure.Persistance.Repositories
             return await _context.Reservations
                 .Include(r => r.Station)
                 .Include(r => r.ReservationAllocations)
+                .Include(r => r.Payments) 
                 .Where(r => r.UserId == userId)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
