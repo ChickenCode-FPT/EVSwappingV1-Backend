@@ -1,7 +1,7 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
-using Application.Dtos;
+using Application.Dtos.User;
 using AutoMapper;
 using Domain.Models;
 using Microsoft.AspNetCore.Identity;

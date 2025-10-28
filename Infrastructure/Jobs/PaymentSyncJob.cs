@@ -1,12 +1,10 @@
 ﻿using Application.Common.Interfaces;
-using Application.Common.Interfaces.Repositories;
 using Application.Interfaces.Repositories;
 using Domain.Enums;
 using Domain.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Quartz;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;

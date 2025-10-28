@@ -2,7 +2,8 @@
 using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
 using Application.Common.Interfaces.Services.Application.Common.Interfaces.Services;
-using Application.Dtos;
+using Application.Dtos.Payment;
+using Application.Dtos.Reservation;
 using AutoMapper;
 using Domain.Enums;
 using Domain.Models;
@@ -67,12 +68,15 @@ namespace Application.Services
 
             if (toUtc <= fromUtc)
                 throw new InvalidOperationException("Thời gian đặt không hợp lệ.");
+
             if ((toUtc - fromUtc).TotalMinutes > 90)
                 throw new InvalidOperationException("Thời lượng đặt tối đa là 90 phút.");
+
             if (fromUtc < DateTime.UtcNow.AddMinutes(10))
                 throw new InvalidOperationException("Bạn chỉ được đặt trước ít nhất 10 phút.");
 
             var existing = await _reservationRepo.GetByUserId(userId);
+
             if (existing.Any(r => r.Status == ReservationStatus.Pending &&
                                   r.ReservedFrom < toUtc &&
                                   r.ReservedTo > fromUtc))
@@ -89,6 +93,7 @@ namespace Application.Services
                 try
                 {
                     var candidateIds = await _inventoryRepo.GetFullBatteryIdsByModel(request.StationId, modelId);
+
                     if (!candidateIds.Any())
                         throw new InvalidOperationException("Không còn pin đầy phù hợp.");
 
@@ -96,11 +101,13 @@ namespace Application.Services
                         .GetOverlappingBatteryIds(candidateIds, fromUtc, toUtc);
 
                     var freeBatteryId = candidateIds.Except(overlappingIds).FirstOrDefault();
+
                     if (freeBatteryId == 0)
                         throw new InvalidOperationException("Tất cả pin phù hợp đang được giữ. Vui lòng chọn khung giờ khác.");
 
                     var stillFree = await _reservationAllocationRepo
                         .IsBatteryFreeInWindow(freeBatteryId, fromUtc, toUtc);
+
                     if (!stillFree)
                         throw new InvalidOperationException("Pin vừa được giữ bởi người khác. Thử lại.");
 

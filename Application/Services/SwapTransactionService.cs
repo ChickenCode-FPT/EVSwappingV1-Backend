@@ -1,7 +1,9 @@
 ﻿using Application.Common.Interfaces;
 using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
-using Application.Dtos;
+using Application.Dtos.Payment;
+using Application.Dtos.Swap;
+using Application.Interfaces.Repositories;
 using AutoMapper;
 using Domain.Enums;
 using Domain.Models;
@@ -17,6 +19,7 @@ namespace Application.Services
         private readonly ISubscriptionRepository _subscriptionRepo;
         private readonly IPaymentService _paymentService;
         private readonly ILogger<SwapTransactionService> _logger;
+        private readonly IPaymentRepository _paymentRepo;
         private readonly IMapper _mapper;
 
         public SwapTransactionService(
@@ -25,6 +28,7 @@ namespace Application.Services
             ISubscriptionRepository subscriptionRepo,
             IPaymentService paymentService,
             IMapper mapper,
+            IPaymentRepository paymentRepo,
             ILogger<SwapTransactionService> logger)
         {
             _swapRepo = swapRepo;
@@ -32,6 +36,7 @@ namespace Application.Services
             _subscriptionRepo = subscriptionRepo;
             _paymentService = paymentService;
             _mapper = mapper;
+            _paymentRepo = paymentRepo;
             _logger = logger;
         }
 
@@ -70,7 +75,6 @@ namespace Application.Services
             };
 
             await _swapRepo.Add2(swap);
-            _logger.LogInformation("[Swap] Created new swap #{id} for user {user}", swap.SwapTransactionId, swap.CustomerUserId);
             return _mapper.Map<SwapTransactionDto2>(swap);
         }
 
@@ -86,7 +90,6 @@ namespace Application.Services
             swap.Notes = request.Notes ?? swap.Notes;
 
             await _swapRepo.Update2(swap);
-            _logger.LogInformation("[Swap] Completed swap #{id}", swap.SwapTransactionId);
 
             return _mapper.Map<SwapTransactionDto2>(swap);
         }
@@ -94,13 +97,12 @@ namespace Application.Services
         public async Task<bool> DeleteSwap(long id)
         {
             await _swapRepo.Delete2(id);
-            _logger.LogInformation("[Swap] Deleted swap #{id}", id);
             return true;
         }
 
         public async Task<PaymentResponseDto> HandleSwapPayment(long swapTransactionId)
         {
-            var swap = await _swapRepo.GetById(swapTransactionId)
+            var swap = await _swapRepo.GetById2(swapTransactionId)
                 ?? throw new KeyNotFoundException("Swap transaction not found.");
 
             if (swap.SwapStatus == SwapStatus.Completed)
@@ -111,31 +113,59 @@ namespace Application.Services
             var activeSub = (await _subscriptionRepo.GetByUser(swap.CustomerUserId))
                 .FirstOrDefault(s => s.Status == SubscriptionStatus.Active && s.EndDate >= DateTime.UtcNow);
 
-            if (activeSub != null)
+            if (activeSub != null && activeSub.RemainingSwaps > 0)
             {
-                if (activeSub.RemainingSwaps > 0)
+                activeSub.RemainingSwaps--;
+                await _subscriptionRepo.Update(activeSub);
+
+                swap.SwapStatus = SwapStatus.PaidBySubscription;
+                swap.SwapFinishedAt = DateTime.UtcNow;
+                swap.Notes += $" | Completed using subscription #{activeSub.SubscriptionId}";
+
+                await _swapRepo.Update(swap);
+
+                scope.Complete();
+                return new PaymentResponseDto
                 {
-                    activeSub.RemainingSwaps--;
-                    await _subscriptionRepo.Update(activeSub);
+                    Success = true,
+                    Status = PaymentStatus2.Paid,
+                    Description = $"Swap completed using subscription #{activeSub.SubscriptionId}"
+                };
+            }
 
-                    swap.SwapStatus = SwapStatus.Completed;
-                    swap.SwapFinishedAt = DateTime.UtcNow;
-                    swap.Notes = $"Completed using subscription #{activeSub.SubscriptionId}";
-                    await _swapRepo.Update(swap);
+            decimal amountToPay = swap.Price;
+            Payment? deposit = null;
 
-                    _logger.LogInformation("[Swap] Completed by subscription for user {user}", swap.CustomerUserId);
+            if (swap.ReservationId.HasValue)
+            {
+                var res = await _reservationRepo.GetById(swap.ReservationId.Value);
+                deposit = res?.Payments.FirstOrDefault(p =>
+                    p.Type == PaymentType.ReservationDeposit &&
+                    p.Status == PaymentStatus2.Paid);
 
-                    scope.Complete();
+                if (deposit != null)
+                {
+                    amountToPay = Math.Max(0, swap.Price - deposit.Amount);
 
-                    return new PaymentResponseDto
-                    {
-                        Success = true,
-                        Description = "Swap completed using active subscription.",
-                        Status = PaymentStatus2.Paid
-                    };
+                    deposit.Status = PaymentStatus2.Forfeit; // trừ cọc
+                    await _paymentRepo.Update(deposit);
                 }
+            }
 
-                _logger.LogInformation("[Swap] Subscription expired or no remaining swaps, creating payment...");
+            if (amountToPay <= 0)
+            {
+                swap.SwapStatus = SwapStatus.Completed;
+                swap.SwapFinishedAt = DateTime.UtcNow;
+                swap.Notes += " | Completed using deposit balance.";
+                await _swapRepo.Update(swap);
+
+                scope.Complete();
+                return new PaymentResponseDto
+                {
+                    Success = true,
+                    Status = PaymentStatus2.Paid,
+                    Description = "Swap completed using reservation deposit."
+                };
             }
 
             var paymentRequest = new PaymentCreateDto
@@ -143,7 +173,7 @@ namespace Application.Services
                 UserId = swap.CustomerUserId,
                 SwapTransactionId = swap.SwapTransactionId,
                 Type = PaymentType.SwapFee,
-                Amount = swap.Price,
+                Amount = amountToPay,
                 Currency = "VND",
                 Description = $"Swap fee for transaction #{swap.SwapTransactionId}",
                 Method = "VNPAY"
@@ -152,6 +182,7 @@ namespace Application.Services
             var paymentResponse = await _paymentService.CreatePayment(paymentRequest);
 
             swap.SwapStatus = SwapStatus.PendingPayment;
+            swap.Notes += $" | Awaiting payment of {amountToPay:N0} VND";
             await _swapRepo.Update(swap);
 
             scope.Complete();

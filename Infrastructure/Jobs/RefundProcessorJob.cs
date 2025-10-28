@@ -1,6 +1,6 @@
 ﻿using Application.Common.Interfaces;
 using Application.Common.Interfaces.Repositories;
-using Application.Dtos;
+using Application.Dtos.Payment;
 using Application.Interfaces.Repositories;
 using Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -35,9 +35,7 @@ namespace Infrastructure.Jobs
             var now = DateTime.UtcNow;
             _logger.LogInformation("=== [RefundProcessorJob] Tick at {time} ===", now);
 
-            var cancelledReservations = (await _reservationRepo.GetAll())
-                .Where(r => r.Status == ReservationStatus.Cancelled)
-                .ToList();
+            var cancelledReservations = await _reservationRepo.GetByStatus(ReservationStatus.Cancelled);
 
             if (!cancelledReservations.Any())
             {

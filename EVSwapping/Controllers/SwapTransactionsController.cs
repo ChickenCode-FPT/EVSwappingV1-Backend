@@ -1,5 +1,5 @@
 ﻿using Application.Common.Interfaces.Services;
-using Application.Dtos;
+using Application.Dtos.Swap;
 using Application.SwapTransactions.Commands;
 using Application.SwapTransactions.Queries;
 using MediatR;
@@ -116,7 +116,6 @@ namespace EVSwapping.Controllers
                 return BadRequest(ModelState);
 
             var result = await _swapService.CreateSwap(request);
-            _logger.LogInformation("[SwapController] Created swap #{id}", result.SwapTransactionId);
 
             return Ok(result);
         }
@@ -128,7 +127,6 @@ namespace EVSwapping.Controllers
                 return BadRequest(ModelState);
 
             var result = await _swapService.CompleteSwap(request);
-            _logger.LogInformation("[SwapController] Completed swap #{id}", result.SwapTransactionId);
 
             return Ok(result);
         }
@@ -160,7 +158,6 @@ namespace EVSwapping.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[SwapController] Error handling swap payment for #{id}", swapId);
                 return StatusCode(500, new { error = ex.Message });
             }
         }
@@ -172,7 +169,6 @@ namespace EVSwapping.Controllers
             if (!success)
                 return NotFound(new { message = $"Swap #{id} not found or could not be deleted." });
 
-            _logger.LogInformation("[SwapController] Deleted swap #{id}", id);
             return Ok(new { message = $"Swap #{id} deleted successfully." });
         }
 

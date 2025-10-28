@@ -1,7 +1,7 @@
 ﻿using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
-using Application.Dtos;
 using Application.Dtos.Osrm;
+using Application.Dtos.Station;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 
@@ -64,7 +64,6 @@ namespace Application.Services
 
             if (!valid.Any())
             {
-                _logger.LogDebug("Không có trạm hợp lệ để tính khoảng cách.");
                 return null;
             }
 
@@ -110,7 +109,6 @@ namespace Application.Services
 
             if (!valid.Any())
             {
-                _logger.LogWarning("Không có trạm hợp lệ để tính OSRM /table");
                 return [];
             }
 

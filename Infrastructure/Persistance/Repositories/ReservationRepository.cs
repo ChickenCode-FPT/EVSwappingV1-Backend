@@ -68,7 +68,7 @@ namespace Infrastructure.Persistance.Repositories
             return await _context.Reservations
                 .Include(r => r.Station)
                 .Include(r => r.ReservationAllocations)
-                .Include(r => r.Payments) 
+                .Include(r => r.Payments)
                 .Where(r => r.UserId == userId)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
@@ -111,9 +111,11 @@ namespace Infrastructure.Persistance.Repositories
         public async Task<IEnumerable<Reservation>> GetPendingReservations()
         {
             return await _context.Reservations
-                .Include(r => r.Station)
                 .Where(r => r.Status == ReservationStatus.Pending)
-                .OrderBy(r => r.ReservedFrom)
+                .Include(r => r.ReservationAllocations)
+                    .ThenInclude(a => a.Battery)
+                .Include(r => r.Station)
+                .Include(r => r.User)
                 .ToListAsync();
         }
 
@@ -161,6 +163,15 @@ namespace Infrastructure.Persistance.Repositories
         public async Task<IDbContextTransaction> BeginTransactionAsync()
         {
             return await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+        }
+
+        public async Task<IEnumerable<Reservation>> GetByStatus(string status)
+        {
+            return await _context.Reservations
+                .Where(r => r.Status == status)
+                .Include(r => r.Payments)
+                .Include(r => r.ReservationAllocations)
+                .ToListAsync();
         }
     }
 }

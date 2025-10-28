@@ -1,4 +1,4 @@
-using Application.Dtos;
+using Application.Dtos.User;
 
 namespace Application.Common.Interfaces.Services;
 

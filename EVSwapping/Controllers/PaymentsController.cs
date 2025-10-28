@@ -1,5 +1,5 @@
 ﻿using Application.Common.Interfaces;
-using Application.Dtos;
+using Application.Dtos.Payment;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EVSwapping.Controllers
@@ -69,7 +69,11 @@ namespace EVSwapping.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllPayments() => Ok(await _paymentService.GetAllPayments());
+        public async Task<IActionResult> GetAllPayments()
+        {
+            return Ok(await _paymentService.GetAllPayments());
+        }
+
 
         [HttpGet("{id:long}")]
         public async Task<IActionResult> GetPaymentById(long id)
@@ -80,7 +84,9 @@ namespace EVSwapping.Controllers
 
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetUserPayments(string userId)
-            => Ok(await _paymentService.GetUserPayments(userId));
+        {
+            return Ok(await _paymentService.GetUserPayments(userId));
+        }
 
         [HttpPost("update-status")]
         public async Task<IActionResult> UpdateStatus([FromBody] PaymentStatusUpdateDto dto)

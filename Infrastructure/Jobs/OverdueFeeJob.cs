@@ -1,6 +1,6 @@
 ﻿using Application.Common.Interfaces;
 using Application.Common.Interfaces.Repositories;
-using Application.Dtos;
+using Application.Dtos.Payment;
 using Application.Interfaces.Repositories;
 using Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -16,7 +16,6 @@ namespace Infrastructure.Jobs
         private readonly IPaymentService _paymentService;
         private readonly ILogger<OverdueFeeJob> _logger;
 
-        // Có thể config ngoài appsettings
         private const decimal HourlyOverdueRate = 10000m; // 10.000đ / giờ
 
         public OverdueFeeJob(
@@ -36,18 +35,14 @@ namespace Infrastructure.Jobs
             var now = DateTime.UtcNow;
             _logger.LogInformation("=== [OverdueFeeJob] Tick at {time} ===", now);
 
-            var swaps = await _swapRepo.GetAll();
-
-            var completed = swaps.Where(s =>
-                s.SwapStatus == SwapStatus.Completed &&
-                s.SwapFinishedAt.HasValue).ToList();
+            var completed = await _swapRepo.GetCompletedWithoutPenalty(DateTime.UtcNow.AddHours(-1));
 
             foreach (var swap in completed)
             {
                 try
                 {
                     var overdueHours = (now - swap.SwapFinishedAt!.Value).TotalHours;
-                    if (overdueHours < 1) continue; // chưa đến 1h => không tính phí
+                    if (overdueHours < 1) continue; // chưa đến 1h => ko tính phí
 
                     var payments = await _paymentRepo.GetBySwapTransaction(swap.SwapTransactionId);
                     bool hasPenalty = payments.Any(p => p.Type == PaymentType.Penalty);

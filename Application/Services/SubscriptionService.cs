@@ -1,6 +1,6 @@
 ﻿using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
-using Application.Dtos;
+using Application.Dtos.Subscription;
 using AutoMapper;
 using Domain.Models;
 

@@ -1,5 +1,5 @@
 ﻿using Application.Common.Interfaces.Repositories;
-using Application.Dtos;
+using Application.Dtos.Battery;
 using AutoMapper;
 using MediatR;
 

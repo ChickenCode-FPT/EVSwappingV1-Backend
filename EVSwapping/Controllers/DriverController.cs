@@ -1,5 +1,5 @@
 ﻿using Application.Common.Interfaces.Services;
-using Application.Dtos;
+using Application.Dtos.Driver;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

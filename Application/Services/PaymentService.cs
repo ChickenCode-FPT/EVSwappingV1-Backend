@@ -1,13 +1,12 @@
 ﻿using Application.Common.Interfaces;
 using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
-using Application.Dtos;
+using Application.Dtos.Payment;
 using Application.Interfaces.Repositories;
 using AutoMapper;
 using Domain.Enums;
 using Domain.Models;
 using Microsoft.Extensions.Logging;
-using System.Security;
 using System.Transactions;
 
 namespace Application.Services
@@ -60,12 +59,10 @@ namespace Application.Services
                 payment.PayOSOrderCode = gatewayResp.GatewayOrderCode;
 
             if (!string.IsNullOrEmpty(gatewayResp.CheckoutUrl))
-                payment.CheckoutUrl = gatewayResp.CheckoutUrl;  
+                payment.CheckoutUrl = gatewayResp.CheckoutUrl;
 
             await _paymentRepo.Update(payment);
             await _paymentRepo.SaveChanges();
-
-            _logger.LogInformation("[Payment] Created payment #{id} ({desc}) via VNPAY", payment.PaymentId, payment.Description);
 
             return gatewayResp;
         }
@@ -73,6 +70,7 @@ namespace Application.Services
         public async Task<PaymentResponseDto> CreateRefund(RefundRequestDto dto)
         {
             var original = await _paymentRepo.GetById(dto.OriginalPaymentId);
+
             if (original == null)
                 throw new KeyNotFoundException("Original payment not found.");
 
@@ -99,13 +97,11 @@ namespace Application.Services
             {
                 refund.Status = PaymentStatus2.Refunded;
                 original.Status = PaymentStatus2.Refunded;
-                _logger.LogInformation("[Refund] SUCCESS #{id}, for original #{orig}", refund.PaymentId, original.PaymentId);
             }
             else
             {
                 refund.Status = PaymentStatus2.Cancelled;
                 refund.Description += $" (Fail: {result.Message})";
-                _logger.LogWarning("[Refund] FAIL #{id}: {msg}", refund.PaymentId, result.Message);
             }
 
             await _paymentRepo.Update(refund);
@@ -182,8 +178,7 @@ namespace Application.Services
 
         public async Task UpdateLinkedEntitiesAfterPayment(Payment payment)
         {
-            if (payment.Status != PaymentStatus2.Paid &&
-                payment.Status != PaymentStatus2.Refunded)
+            if (payment.Status is not (PaymentStatus2.Paid or PaymentStatus2.Refunded))
                 return;
 
             using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
@@ -195,19 +190,30 @@ namespace Application.Services
                 {
                     res.Status = ReservationStatus.Completed;
                     await _reservationRepo.Update(res);
-                    _logger.LogInformation("[Link] Reservation #{id} marked Completed after payment #{pid}", res.ReservationId, payment.PaymentId);
                 }
             }
 
             if (payment.SwapTransactionId.HasValue)
             {
                 var swap = await _swapRepo.GetById(payment.SwapTransactionId.Value);
-                if (swap != null && swap.SwapStatus == SwapStatus.Pending)
+                if (swap != null &&
+                    (swap.SwapStatus == SwapStatus.Pending || swap.SwapStatus == SwapStatus.PendingPayment))
                 {
                     swap.SwapStatus = SwapStatus.Completed;
                     swap.SwapFinishedAt = DateTime.UtcNow;
+                    swap.Notes += $" | Completed via payment #{payment.PaymentId} at {DateTime.UtcNow:HH:mm dd/MM/yyyy}";
+
+                    if (swap.ReservationId.HasValue)
+                    {
+                        var res = await _reservationRepo.GetById(swap.ReservationId.Value);
+                        if (res != null && res.Status != ReservationStatus.Completed)
+                        {
+                            res.Status = ReservationStatus.Completed;
+                            await _reservationRepo.Update(res);
+                        }
+                    }
+
                     await _swapRepo.Update(swap);
-                    _logger.LogInformation("[Link] SwapTransaction #{id} Completed after payment #{pid}", swap.SwapTransactionId, payment.PaymentId);
                 }
             }
 
@@ -226,8 +232,8 @@ namespace Application.Services
                         _ => DateTime.UtcNow.AddMonths(1)
                     };
                     sub.RemainingSwaps = sub.Package.IncludedSwaps;
+
                     await _subscriptionRepo.Update(sub);
-                    _logger.LogInformation("[Link] Subscription #{id} activated via payment #{pid}", sub.SubscriptionId, payment.PaymentId);
                 }
             }
 
@@ -235,7 +241,10 @@ namespace Application.Services
             scope.Complete();
         }
 
-        public async Task<IEnumerable<Payment>> GetAllPayments() => await _paymentRepo.GetAll();
+        public async Task<IEnumerable<Payment>> GetAllPayments()
+        {
+            return await _paymentRepo.GetAll();
+        }
 
         public async Task<PaymentAndTranDto?> GetPaymentById(long id)
         {
@@ -284,13 +293,11 @@ namespace Application.Services
             var payment = await _paymentRepo.GetByTransactionRef(dto.OrderCode);
             if (payment == null)
             {
-                _logger.LogWarning("[PaymentUpdate] Payment not found for {OrderCode}", dto.OrderCode);
                 return null;
             }
 
             if (payment.Status == PaymentStatus2.Paid && dto.Status.Equals("Paid", StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogInformation("[PaymentUpdate] Payment {OrderCode} already Paid, skipping.", dto.OrderCode);
                 return _mapper.Map<PaymentResponseDto>(payment);
             }
 
@@ -330,7 +337,6 @@ namespace Application.Services
             await _paymentRepo.SaveChanges();
             scope.Complete();
 
-            _logger.LogInformation("[PaymentUpdate] Payment #{pid} updated to {status}", payment.PaymentId, payment.Status);
             return _mapper.Map<PaymentResponseDto>(payment);
         }
     }

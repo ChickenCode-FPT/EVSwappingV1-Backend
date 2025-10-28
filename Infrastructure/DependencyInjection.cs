@@ -72,7 +72,7 @@ namespace Infrastructure
                     .ForJob(expireJob)
                     .WithIdentity("ExpireAndHoldBackgroundService-trigger")
                     .WithSimpleSchedule(x => x
-                        .WithIntervalInMinutes(1) 
+                        .WithIntervalInMinutes(1)
                         //.WithIntervalInMinutes(1) 
                         .RepeatForever()));
 
@@ -82,7 +82,7 @@ namespace Infrastructure
                     .ForJob(refundJob)
                     .WithIdentity("RefundProcessor-trigger")
                     .WithSimpleSchedule(x => x
-                        .WithIntervalInMinutes(1) 
+                        .WithIntervalInMinutes(1)
                         //.WithIntervalInMinutes(15) 
                         .RepeatForever()));
 
@@ -92,7 +92,7 @@ namespace Infrastructure
                     .ForJob(overdueJob)
                     .WithIdentity("OverdueFeeJob-trigger")
                     .WithSimpleSchedule(x => x
-                        .WithIntervalInMinutes(1) 
+                        .WithIntervalInMinutes(1)
                         //.WithIntervalInHours(1) 
                         .RepeatForever()));
 

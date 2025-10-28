@@ -13,7 +13,6 @@ namespace Application.Services
             _batteryModelRepository = batteryModelRepository;
         }
 
-        // Get all battery models
         public async Task<List<BatteryModel>> GetAll()
         {
             try
@@ -22,12 +21,10 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                // Handle error, log, etc.
                 throw new Exception("An error occurred while retrieving battery models.", ex);
             }
         }
 
-        // Get a battery model by ID
         public async Task<BatteryModel?> GetById(int id)
         {
             try
@@ -36,12 +33,10 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                // Handle error, log, etc.
                 throw new Exception("An error occurred while retrieving the battery model.", ex);
             }
         }
 
-        // Add a new battery model
         public async Task Add(BatteryModel model)
         {
             if (model == null)
@@ -55,12 +50,10 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                // Handle error, log, etc.
                 throw new Exception("An error occurred while adding the battery model.", ex);
             }
         }
 
-        // Update an existing battery model
         public async Task Update(BatteryModel model)
         {
             if (model == null)
@@ -74,12 +67,10 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                // Handle error, log, etc.
                 throw new Exception("An error occurred while updating the battery model.", ex);
             }
         }
 
-        // Delete a battery model by ID
         public async Task Delete(int id)
         {
             try
@@ -88,7 +79,6 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                // Handle error, log, etc.
                 throw new Exception("An error occurred while deleting the battery model.", ex);
             }
         }

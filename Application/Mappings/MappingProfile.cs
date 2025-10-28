@@ -1,5 +1,12 @@
 ﻿using Application.Batteries.Commands;
-using Application.Dtos;
+using Application.Dtos.Battery;
+using Application.Dtos.Driver;
+using Application.Dtos.Payment;
+using Application.Dtos.Reservation;
+using Application.Dtos.Station;
+using Application.Dtos.Subscription;
+using Application.Dtos.Swap;
+using Application.Dtos.User;
 using AutoMapper;
 using Domain.Models;
 
@@ -95,7 +102,7 @@ namespace Application.Mappings
             CreateMap<SupportTicket, SupportTicketDto>().ReverseMap();
 
             CreateMap<Payment, PaymentResponseDto>()
-                .ForMember(dest => dest.CheckoutUrl, opt => opt.Ignore()) 
+                .ForMember(dest => dest.CheckoutUrl, opt => opt.Ignore())
                 //.ForMember(dest => dest.PayOSOrderCode, opt => opt.MapFrom(src => src.PayOSOrderCode))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type))
@@ -133,7 +140,7 @@ namespace Application.Mappings
                 .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
                 .ForMember(dest => dest.Currency, opt => opt.MapFrom(src => src.Currency))
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
-                .ForMember(dest => dest.SubscriptionId, opt => opt.Ignore()) 
+                .ForMember(dest => dest.SubscriptionId, opt => opt.Ignore())
                 .ForMember(dest => dest.TransactionRef, opt => opt.MapFrom(src =>
                     string.IsNullOrEmpty(src.TransactionRef)
                         ? $"SUB-{Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper()}"

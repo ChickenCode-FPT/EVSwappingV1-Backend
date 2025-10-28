@@ -9,10 +9,10 @@
 
     public static class PaymentStatus2
     {
-        public const string Pending = "Pending";       // Chưa thanh toán
-        public const string Paid = "Paid";             // Đã thanh toán thành công
-        public const string Refunded = "Refunded";     // Đã hoàn tiền
-        public const string Forfeit = "Forfeit";       // Bị giữ lại / mất cọc
-        public const string Cancelled = "Cancelled";   // Đơn bị hủy (user hoặc lỗi)
+        public const string Pending = "Pending";
+        public const string Paid = "Paid";
+        public const string Refunded = "Refunded";
+        public const string Forfeit = "Forfeit";       // mất cọc
+        public const string Cancelled = "Cancelled";
     }
 }

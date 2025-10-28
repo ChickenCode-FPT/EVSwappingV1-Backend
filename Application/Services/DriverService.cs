@@ -1,7 +1,7 @@
 ﻿using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
 using Application.Common.Interfaces.Services.Application.Common.Interfaces.Services;
-using Application.Dtos;
+using Application.Dtos.Driver;
 using AutoMapper;
 using Domain.Models;
 

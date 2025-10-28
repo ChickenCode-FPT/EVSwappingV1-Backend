@@ -1,4 +1,5 @@
-﻿using Application.Dtos;
+﻿using Application.Dtos.Payment;
+using Application.Dtos.Swap;
 using Domain.Models;
 
 namespace Application.Common.Interfaces.Services

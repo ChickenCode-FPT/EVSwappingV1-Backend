@@ -70,7 +70,5 @@ namespace Infrastructure.Services
             var result = await _userManager.UpdateAsync(user);
             return result.Succeeded;
         }
-
-
     }
 }

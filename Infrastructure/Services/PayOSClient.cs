@@ -1,6 +1,5 @@
-﻿using Application.Common.Interfaces;
-using Application.Common.Interfaces.Services;
-using Application.Dtos;
+﻿using Application.Common.Interfaces.Services;
+using Application.Dtos.Payment;
 using Domain.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

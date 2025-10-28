@@ -1,6 +1,5 @@
-﻿using Application.Common.Interfaces;
-using Application.Common.Interfaces.Services;
-using Application.Dtos;
+﻿using Application.Common.Interfaces.Services;
+using Application.Dtos.Payment;
 using Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -64,10 +63,6 @@ namespace Infrastructure.Services
             var queryUrl = string.Join("&", vnp_Params.Select(kvp => $"{kvp.Key}={WebUtility.UrlEncode(kvp.Value)}"));
             var paymentUrl = $"{_vnpBaseUrl}?{queryUrl}&vnp_SecureHash={secureHash}";
 
-            _logger.LogInformation("[VNPAY] rawData={raw}", rawData);
-            _logger.LogInformation("[VNPAY] SecureHash={hash}", secureHash);
-            _logger.LogInformation("[VNPAY] Checkout URL: {url}", paymentUrl);
-
             return new PaymentResponseDto
             {
                 PaymentId = payment.PaymentId,
@@ -98,18 +93,6 @@ namespace Infrastructure.Services
             var receivedHash = query["vnp_SecureHash"].ToString();
 
             var valid = expectedHash.Equals(receivedHash, StringComparison.OrdinalIgnoreCase);
-
-            if (!valid)
-            {
-                _logger.LogWarning("[VNPAY] ❌ Sai chữ ký callback!");
-                _logger.LogWarning("Expected: {expected}", expectedHash);
-                _logger.LogWarning("Received: {received}", receivedHash);
-                _logger.LogWarning("RawData: {raw}", rawData);
-            }
-            else
-            {
-                _logger.LogInformation("[VNPAY] ✅ Chữ ký hợp lệ cho TxnRef={ref}", query["vnp_TxnRef"]);
-            }
 
             return valid;
         }
@@ -163,8 +146,6 @@ namespace Infrastructure.Services
             var content = new FormUrlEncodedContent(vnp_Params);
             var response = await client.PostAsync(_vnpApiUrl, content);
             var body = await response.Content.ReadAsStringAsync();
-
-            _logger.LogInformation("[VNPAY] Refund API response: {body}", body);
 
             var ok = response.IsSuccessStatusCode && body.Contains("00");
             return new RefundResultDto
