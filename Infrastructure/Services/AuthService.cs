@@ -135,6 +135,7 @@ namespace Infrastructure.Services
             var claims = new List<Claim>
             {
                   new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                  new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                   new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
                   new Claim("fullname", user.FullName ?? ""),
             };

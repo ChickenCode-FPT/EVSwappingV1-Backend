@@ -53,5 +53,31 @@ namespace Infrastructure.Persistance.Repositories
             _context.InterStationTransfers.Update(transfer);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<InterStationTransfer>> GetOutgoingTransfersAsync(int stationId)
+        {
+            return await _context.InterStationTransfers
+                .Include(t => t.FromStation)
+                .Include(t => t.ToStation)
+                .Include(t => t.Battery)
+                .Include(t => t.RequestedByUser)
+                .Include(t => t.ApprovedByUser)
+                .Where(t => t.FromStationId == stationId)
+                .OrderByDescending(t => t.RequestedAt)
+                .ToListAsync();
+        }
+
+        public async Task<List<InterStationTransfer>> GetIncomingTransfersAsync(int stationId)
+        {
+            return await _context.InterStationTransfers
+                .Include(t => t.FromStation)
+                .Include(t => t.ToStation)
+                .Include(t => t.Battery)
+                .Include(t => t.RequestedByUser)
+                .Include(t => t.ApprovedByUser)
+                .Where(t => t.ToStationId == stationId)
+                .OrderByDescending(t => t.RequestedAt)
+                .ToListAsync();
+        }
     }
 }

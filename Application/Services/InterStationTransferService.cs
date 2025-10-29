@@ -3,6 +3,7 @@ using Application.Common.Interfaces.Services;
 using Application.Dtos;
 using AutoMapper;
 using Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,12 +15,15 @@ namespace Application.Services
     public class InterStationTransferService : IInterStationTransferService
     {
         private readonly IInterStationTransferRepository _repository;
+        private readonly IStationStaffRepository _stationStaffRepo;
+
         private readonly IMapper _mapper;
 
-        public InterStationTransferService(IInterStationTransferRepository repository, IMapper mapper)
+        public InterStationTransferService(IInterStationTransferRepository repository, IMapper mapper, IStationStaffRepository stationStaffRepo)
         {
             _repository = repository;
             _mapper = mapper;
+            _stationStaffRepo = stationStaffRepo;
         }
 
         public async Task<InterStationTransferDto> CreateTransferAsync(CreateTransferDto dto)
@@ -65,6 +69,54 @@ namespace Application.Services
         {
             var transfers = await _repository.GetByStationAsync(stationId);
             return _mapper.Map<IEnumerable<InterStationTransferDto>>(transfers);
+        }
+
+        public async Task<List<GetInterStationTransferDto>> GetOutgoingTransfersAsync(string userId)
+        {
+            var staff = await _stationStaffRepo.GetActiveStaffByUserIdAsync(userId)
+                        ?? throw new UnauthorizedAccessException("Staff chưa được gán vào trạm.");
+
+            var transfers = await _repository.GetOutgoingTransfersAsync(staff.StationId);
+
+            return transfers.Select(t => new GetInterStationTransferDto
+            {
+                TransferId = t.TransferId,
+                FromStationId = t.FromStationId,
+                FromStationName = t.FromStation.Name,
+                ToStationId = t.ToStationId,
+                ToStationName = t.ToStation.Name,
+                BatteryId = t.BatteryId,
+                BatterySerial = t.Battery.SerialNumber,
+                Status = t.Status,
+                RequestedAt = t.RequestedAt,
+                CompletedAt = t.CompletedAt,
+                RequestedBy = t.RequestedByUser.FullName,
+                ApprovedBy = t.ApprovedByUser?.FullName
+            }).ToList();
+        }
+
+        public async Task<List<GetInterStationTransferDto>> GetIncomingTransfersAsync(string userId)
+        {
+            var staff = await _stationStaffRepo.GetActiveStaffByUserIdAsync(userId)
+                        ?? throw new UnauthorizedAccessException("Staff chưa được gán vào trạm.");
+
+            var transfers = await _repository.GetIncomingTransfersAsync(staff.StationId);
+
+            return transfers.Select(t => new GetInterStationTransferDto
+            {
+                TransferId = t.TransferId,
+                FromStationId = t.FromStationId,
+                FromStationName = t.FromStation.Name,
+                ToStationId = t.ToStationId,
+                ToStationName = t.ToStation.Name,
+                BatteryId = t.BatteryId,
+                BatterySerial = t.Battery.SerialNumber,
+                Status = t.Status,
+                RequestedAt = t.RequestedAt,
+                CompletedAt = t.CompletedAt,
+                RequestedBy = t.RequestedByUser.FullName,
+                ApprovedBy = t.ApprovedByUser?.FullName
+            }).ToList();
         }
     }
 }

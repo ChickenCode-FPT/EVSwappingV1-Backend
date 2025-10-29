@@ -101,5 +101,20 @@ namespace Infrastructure.Persistance.Repositories
                 .Where(ss => ss.Station.Name == stationName && ss.IsActive)
                 .ToListAsync();
         }
+
+        public async Task<StationStaff?> GetActiveStaffByUserIdAsync(string userId)
+        {
+            return await _context.StationStaffs
+                .Include(s => s.Station)
+                .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive);
+        }
+
+        public async Task<List<StationStaff>> GetStaffByStationIdAsync(int stationId)
+        {
+            return await _context.StationStaffs
+                .Include(s => s.User)
+                .Where(s => s.StationId == stationId && s.IsActive)
+                .ToListAsync();
+        }
     }
 }

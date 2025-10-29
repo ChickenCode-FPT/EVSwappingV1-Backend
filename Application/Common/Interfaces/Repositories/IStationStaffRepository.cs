@@ -18,5 +18,8 @@ namespace Application.Common.Interfaces.Repositories
         Task RemoveStaffAsync(int stationStaffId);
         Task<IEnumerable<StationStaff>> GetByStationCodeAsync(string stationCode);
         Task<IEnumerable<StationStaff>> GetByStationNameAsync(string stationName);
+        Task<StationStaff?> GetActiveStaffByUserIdAsync(string userId);
+        Task<List<StationStaff>> GetStaffByStationIdAsync(int stationId);
+
     }
 }

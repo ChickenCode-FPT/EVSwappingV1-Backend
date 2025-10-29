@@ -13,6 +13,8 @@ namespace Application.Common.Interfaces.Repositories
         Task<InterStationTransfer?> GetByIdAsync(long id);
         Task<IEnumerable<InterStationTransfer>> GetByStationAsync(int stationId);
         Task UpdateAsync(InterStationTransfer transfer);
+        Task<List<InterStationTransfer>> GetOutgoingTransfersAsync(int stationId);
+        Task<List<InterStationTransfer>> GetIncomingTransfersAsync(int stationId);
     }
 
 }

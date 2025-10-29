@@ -2,6 +2,7 @@
 using Application.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace EVSwapping.Controllers
 {
@@ -42,6 +43,26 @@ namespace EVSwapping.Controllers
         {
             var transfers = await _service.GetTransfersByStationAsync(stationId);
             return Ok(transfers);
+        }
+
+        [HttpGet("outgoing")]
+        public async Task<IActionResult> GetOutgoingTransfers()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if(userId == null)
+            {
+                return Unauthorized();
+            }
+            var result = await _service.GetOutgoingTransfersAsync(userId);
+            return Ok(result);
+        }
+
+        [HttpGet("incoming")]
+        public async Task<IActionResult> GetIncomingTransfers()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var result = await _service.GetIncomingTransfersAsync(userId);
+            return Ok(result);
         }
     }
 }
