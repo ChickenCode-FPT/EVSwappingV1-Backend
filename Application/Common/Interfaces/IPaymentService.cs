@@ -10,7 +10,7 @@ namespace Application.Common.Interfaces
         Task<PaymentResponseDto> CreatePenalty(PenaltyPaymentDto dto);
         Task SyncPendingPaymentsAsync();
         Task UpdateLinkedEntitiesAfterPayment(Payment payment);
-        Task<IEnumerable<Payment>> GetAllPayments();
+        Task<IEnumerable<PaymentResponseDto>> GetAllPayments();
         Task<PaymentAndTranDto?> GetPaymentById(long id);
         Task<IEnumerable<PaymentSummaryDto>> GetUserPayments(string userId);
         Task<PaymentResponseDto?> HandleWebhook(PaymentWebhookDto dto);

@@ -56,6 +56,7 @@ namespace Application.Mappings
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
 
             CreateMap<SubscriptionPackage, SubscriptionPackageDto>();
+            
             //payment
             CreateMap<Payment, PaymentAndTranDto>()
             .ForMember(dest => dest.Transcation, opt => opt.MapFrom(src => src.SwapTransaction))
@@ -91,6 +92,7 @@ namespace Application.Mappings
             CreateMap<ReservationAllocation, ReservationAllocationDto>().ReverseMap();
 
             CreateMap<Vehicle, VehicleDto>().ReverseMap();
+
             //reservation
             CreateMap<Reservation, ReverInSwapDto>().ReverseMap();
 
@@ -102,14 +104,20 @@ namespace Application.Mappings
             CreateMap<SupportTicket, SupportTicketDto>().ReverseMap();
 
             CreateMap<Payment, PaymentResponseDto>()
-                .ForMember(dest => dest.CheckoutUrl, opt => opt.Ignore())
-                //.ForMember(dest => dest.PayOSOrderCode, opt => opt.MapFrom(src => src.PayOSOrderCode))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type))
-                .ForMember(dest => dest.Method, opt => opt.MapFrom(src => src.Method))
-                .ForMember(dest => dest.Currency, opt => opt.MapFrom(src => src.Currency))
-                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
-                .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount));
+                .ForMember(dest => dest.GatewayOrderCode, opt => opt.MapFrom(src => src.PayOSOrderCode));
+                //.ForMember(dest => dest.CheckoutUrl, opt => opt.MapFrom(src => src.CheckoutUrl))
+                //.ForMember(dest => dest.SwapTransactionId, opt => opt.MapFrom(src => src.SwapTransactionId))
+                //.ForMember(dest => dest.ReservationId, opt => opt.MapFrom(src => src.ReservationId))
+                //.ForMember(dest => dest.SubscriptionId, opt => opt.MapFrom(src => src.SubscriptionId))
+                //.ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                //.ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type))
+                //.ForMember(dest => dest.Method, opt => opt.MapFrom(src => src.Method))
+                //.ForMember(dest => dest.Currency, opt => opt.MapFrom(src => src.Currency))
+                //.ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                //.ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
+                //.ForMember(dest => dest.SwapTransaction, opt => opt.MapFrom(src => src.SwapTransaction))
+                //.ForMember(dest => dest.Reservation, opt => opt.MapFrom(src => src.Reservation))
+                //.ForMember(dest => dest.Subscription, opt => opt.MapFrom(src => src.Subscription));
 
             CreateMap<Payment, PaymentSummaryDto>()
                 .ForMember(dest => dest.RelatedEntity, opt => opt.Ignore());

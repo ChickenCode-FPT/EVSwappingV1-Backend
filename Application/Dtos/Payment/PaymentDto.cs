@@ -1,4 +1,7 @@
-﻿namespace Application.Dtos.Payment
+﻿using Application.Dtos.Reservation;
+using Application.Dtos.Subscription;
+
+namespace Application.Dtos.Payment
 {
     public class PaymentDto
     {

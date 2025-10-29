@@ -241,9 +241,10 @@ namespace Application.Services
             scope.Complete();
         }
 
-        public async Task<IEnumerable<Payment>> GetAllPayments()
+        public async Task<IEnumerable<PaymentResponseDto>> GetAllPayments()
         {
-            return await _paymentRepo.GetAll();
+            var payments = await _paymentRepo.GetAll();
+            return _mapper.Map<IEnumerable<PaymentResponseDto>>(payments);
         }
 
         public async Task<PaymentAndTranDto?> GetPaymentById(long id)
