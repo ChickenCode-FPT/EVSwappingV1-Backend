@@ -22,6 +22,7 @@ public partial class Battery
     public DateTime? LastMaintenance { get; set; }
 
     public DateTime CreatedAt { get; set; }
+    public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
     public virtual ICollection<BatteryHealthLog> BatteryHealthLogs { get; set; } = new List<BatteryHealthLog>();
 

@@ -93,4 +93,40 @@
 
         public DateTime CreatedAt { get; set; }
     }
+
+    public class SwapTransactionDto2
+    {
+        public long SwapTransactionId { get; set; }
+        public int? ReservationId { get; set; }
+        public int StationId { get; set; }
+        public string CustomerUserId { get; set; } = string.Empty;
+        public string? StaffUserId { get; set; }
+        public int? OutgoingBatteryId { get; set; }
+        public int? IncomingBatteryId { get; set; }
+        public DateTime SwapStartedAt { get; set; }
+        public DateTime? SwapFinishedAt { get; set; }
+        public string SwapStatus { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public string? Notes { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class CreateSwapTransactionRequest
+    {
+        public int? ReservationId { get; set; }
+        public int StationId { get; set; }
+        public string CustomerUserId { get; set; } = string.Empty;
+        public int? OutgoingBatteryId { get; set; }
+        public int? IncomingBatteryId { get; set; }
+        public string? Notes { get; set; }
+        public decimal Price { get; set; }
+    }
+
+    public class CompleteSwapTransactionRequest
+    {
+        public long SwapTransactionId { get; set; }
+        public int? IncomingBatteryId { get; set; }
+        public decimal? FinalPrice { get; set; }
+        public string? Notes { get; set; }
+    }
 }

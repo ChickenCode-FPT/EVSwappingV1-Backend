@@ -13,9 +13,6 @@ namespace Infrastructure.Persistance.Repositories
             _context = context;
         }
 
-        /// <summary>
-        /// Kiểm tra xem Reservation có giao dịch đổi pin nào chưa.
-        /// </summary>
         public async Task<bool> ExistsByReservationId(int reservationId)
         {
             return await _context.SwapTransactions
@@ -91,6 +88,51 @@ namespace Infrastructure.Persistance.Repositories
             transaction.SwapFinishedAt = DateTime.UtcNow;
 
             _context.SaveChanges();
+        }
+
+        public async Task<IEnumerable<SwapTransaction>> GetAll2()
+            => await _context.SwapTransactions.AsNoTracking().ToListAsync();
+
+        public async Task<SwapTransaction?> GetById2(long id)
+            => await _context.SwapTransactions.FindAsync(id);
+
+        public async Task<IEnumerable<SwapTransaction>> GetByUser(string userId)
+            => await _context.SwapTransactions
+                .Where(s => s.CustomerUserId == userId)
+                .OrderByDescending(s => s.CreatedAt)
+                .ToListAsync();
+
+        public async Task<SwapTransaction> Add2(SwapTransaction swap)
+        {
+            await _context.SwapTransactions.AddAsync(swap);
+            await _context.SaveChangesAsync();
+            return swap;
+        }
+
+        public async Task Update2(SwapTransaction swap)
+        {
+            _context.SwapTransactions.Update(swap);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task Delete2(long id)
+        {
+            var entity = await _context.SwapTransactions.FindAsync(id);
+            if (entity != null)
+            {
+                _context.SwapTransactions.Remove(entity);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<bool> ExistsByReservationId2(int reservationId)
+        { 
+            return await _context.SwapTransactions.AnyAsync(s => s.ReservationId == reservationId);
+        }
+
+        public async Task SaveChanges()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

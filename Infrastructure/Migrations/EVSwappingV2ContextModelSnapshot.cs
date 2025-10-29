@@ -31,17 +31,21 @@ namespace Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("AuditId"));
 
                     b.Property<string>("Action")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("KeyValues")
+                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("NewValues")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OldValues")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PerformedAt")
@@ -53,6 +57,7 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("TableName")
+                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -78,7 +83,7 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("(sysutcdatetime())");
+                        .HasDefaultValueSql("(SYSUTCDATETIME())");
 
                     b.Property<decimal?>("CurrentSoH")
                         .HasColumnType("decimal(5, 2)");
@@ -91,6 +96,12 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime?>("LastMaintenance")
                         .HasColumnType("datetime2");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<string>("SerialNumber")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -101,7 +112,7 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("Available");
+                        .HasDefaultValue("Full");
 
                     b.HasKey("BatteryId")
                         .HasName("PK__Batterie__5710805E39AB72DF");
@@ -129,6 +140,7 @@ namespace Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Notes")
+                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
@@ -164,10 +176,12 @@ namespace Infrastructure.Migrations
                         .HasColumnName("CapacityKWh");
 
                     b.Property<string>("Chemistry")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("CompatibleVehicleTypes")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -177,6 +191,7 @@ namespace Infrastructure.Migrations
                         .HasDefaultValueSql("(sysutcdatetime())");
 
                     b.Property<string>("Manufacturer")
+                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -208,6 +223,7 @@ namespace Infrastructure.Migrations
                         .HasDefaultValueSql("(sysutcdatetime())");
 
                     b.Property<string>("PreferredPaymentMethod")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -217,14 +233,14 @@ namespace Infrastructure.Migrations
                         .HasDefaultValue(0);
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("DriverId")
                         .HasName("PK__Drivers__F1B1CD044D05801A");
 
                     b.HasIndex(new[] { "UserId" }, "UQ__Drivers__1788CC4D82BCB27F")
-                        .IsUnique()
-                        .HasFilter("[UserId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Drivers");
                 });
@@ -306,32 +322,69 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(10)")
                         .HasDefaultValue("VND");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("Method")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("PayOS");
 
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<long?>("ParentPaymentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("PayOSOrderCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ReservationId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("Paid");
+                        .HasDefaultValue("Pending");
+
+                    b.Property<int?>("SubscriptionId")
+                        .HasColumnType("int");
 
                     b.Property<long?>("SwapTransactionId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("TransactionRef")
+                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("SwapFee");
+
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("WebhookPayload")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("PaymentId")
                         .HasName("PK__Payments__9B556A38B7824D61");
+
+                    b.HasIndex("ParentPaymentId");
+
+                    b.HasIndex("ReservationId");
+
+                    b.HasIndex("SubscriptionId");
 
                     b.HasIndex("SwapTransactionId");
 
@@ -349,6 +402,7 @@ namespace Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("RatingId"));
 
                     b.Property<string>("Comment")
+                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
@@ -367,6 +421,7 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("RatingId")
@@ -419,6 +474,7 @@ namespace Infrastructure.Migrations
                         .HasDefaultValueSql("(sysutcdatetime())");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int?>("VehicleId")
@@ -447,7 +503,9 @@ namespace Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ReservationAllocationId"));
 
                     b.Property<DateTime>("AllocatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("(SYSUTCDATETIME())");
 
                     b.Property<int>("BatteryId")
                         .HasColumnType("int");
@@ -460,14 +518,18 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("Active");
 
                     b.HasKey("ReservationAllocationId");
 
-                    b.HasIndex("ReservationId");
+                    b.HasIndex("BatteryId", "Status")
+                        .IsUnique()
+                        .HasFilter("[Status] = 'Active'");
 
-                    b.HasIndex("BatteryId", "Status");
+                    b.HasIndex("ReservationId", "Status");
 
                     b.ToTable("ReservationAllocations", (string)null);
                 });
@@ -481,6 +543,7 @@ namespace Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StationId"));
 
                     b.Property<string>("Address")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -509,6 +572,7 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -547,6 +611,7 @@ namespace Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("SlotNumber")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -595,6 +660,7 @@ namespace Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("StationStaffId")
@@ -603,8 +669,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.HasIndex(new[] { "StationId", "UserId" }, "UQ__StationS__31A02A78D13251A8")
-                        .IsUnique()
-                        .HasFilter("[UserId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("StationStaffs");
                 });
@@ -639,9 +704,10 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("Active");
+                        .HasDefaultValue("Pending");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("SubscriptionId")
@@ -703,6 +769,7 @@ namespace Infrastructure.Migrations
                         .HasDefaultValueSql("(sysutcdatetime())");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("StationId")
@@ -716,10 +783,12 @@ namespace Infrastructure.Migrations
                         .HasDefaultValue("Open");
 
                     b.Property<string>("Subject")
+                        .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("TicketId")
@@ -746,17 +815,29 @@ namespace Infrastructure.Migrations
                         .HasDefaultValueSql("(sysutcdatetime())");
 
                     b.Property<string>("CustomerUserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int?>("IncomingBatteryId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsPenalty")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Notes")
+                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<int?>("OutgoingBatteryId")
                         .HasColumnType("int");
+
+                    b.Property<string>("PaymentType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("PayPerUse");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18, 2)");
@@ -783,7 +864,7 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("Completed");
+                        .HasDefaultValue("Pending");
 
                     b.HasKey("SwapTransactionId")
                         .HasName("PK__SwapTran__F6083D6BDCC4B582");
@@ -1099,6 +1180,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.User", "User")
                         .WithOne("Driver")
                         .HasForeignKey("Domain.Models.Driver", "UserId")
+                        .IsRequired()
                         .HasConstraintName("FK__Drivers__UserId__6C190EBB");
 
                     b.Navigation("User");
@@ -1147,6 +1229,24 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Models.Payment", b =>
                 {
+                    b.HasOne("Domain.Models.Payment", "ParentPayment")
+                        .WithMany("ChildPayments")
+                        .HasForeignKey("ParentPaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK__Payments__Parent__07E4BC86");
+
+                    b.HasOne("Domain.Models.Reservation", "Reservation")
+                        .WithMany("Payments")
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK__Payments__Reserv__05F0984D");
+
+                    b.HasOne("Domain.Models.Subscription", "Subscription")
+                        .WithMany("Payments")
+                        .HasForeignKey("SubscriptionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK__Payments__Subscr__06F0984E");
+
                     b.HasOne("Domain.Models.SwapTransaction", "SwapTransaction")
                         .WithMany("Payments")
                         .HasForeignKey("SwapTransactionId")
@@ -1155,7 +1255,14 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.User", "User")
                         .WithMany("Payments")
                         .HasForeignKey("UserId")
+                        .IsRequired()
                         .HasConstraintName("FK__Payments__UserId__04E4BC85");
+
+                    b.Navigation("ParentPayment");
+
+                    b.Navigation("Reservation");
+
+                    b.Navigation("Subscription");
 
                     b.Navigation("SwapTransaction");
 
@@ -1177,6 +1284,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.User", "User")
                         .WithMany("Ratings")
                         .HasForeignKey("UserId")
+                        .IsRequired()
                         .HasConstraintName("FK__Ratings__UserId__2CF2ADDF");
 
                     b.Navigation("Station");
@@ -1202,6 +1310,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.User", "User")
                         .WithMany("Reservations")
                         .HasForeignKey("UserId")
+                        .IsRequired()
                         .HasConstraintName("FK__Reservati__UserI__70DDC3D8");
 
                     b.HasOne("Domain.Models.Vehicle", "Vehicle")
@@ -1274,6 +1383,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.User", "User")
                         .WithMany("StationStaffs")
                         .HasForeignKey("UserId")
+                        .IsRequired()
                         .HasConstraintName("FK__StationSt__UserI__160F4887");
 
                     b.Navigation("Station");
@@ -1292,6 +1402,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.User", "User")
                         .WithMany("Subscriptions")
                         .HasForeignKey("UserId")
+                        .IsRequired()
                         .HasConstraintName("FK__Subscript__UserI__0E6E26BF");
 
                     b.Navigation("Package");
@@ -1309,6 +1420,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.User", "User")
                         .WithMany("SupportTickets")
                         .HasForeignKey("UserId")
+                        .IsRequired()
                         .HasConstraintName("FK__SupportTi__UserI__2645B050");
 
                     b.Navigation("Station");
@@ -1321,6 +1433,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.User", "CustomerUser")
                         .WithMany("SwapTransactionCustomerUsers")
                         .HasForeignKey("CustomerUserId")
+                        .IsRequired()
                         .HasConstraintName("FK__SwapTrans__Custo__7A672E12");
 
                     b.HasOne("Domain.Models.Battery", "IncomingBattery")
@@ -1454,8 +1567,15 @@ namespace Infrastructure.Migrations
                     b.Navigation("Vehicles");
                 });
 
+            modelBuilder.Entity("Domain.Models.Payment", b =>
+                {
+                    b.Navigation("ChildPayments");
+                });
+
             modelBuilder.Entity("Domain.Models.Reservation", b =>
                 {
+                    b.Navigation("Payments");
+
                     b.Navigation("ReservationAllocations");
 
                     b.Navigation("SwapTransactions");
@@ -1478,6 +1598,11 @@ namespace Infrastructure.Migrations
                     b.Navigation("SupportTickets");
 
                     b.Navigation("SwapTransactions");
+                });
+
+            modelBuilder.Entity("Domain.Models.Subscription", b =>
+                {
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("Domain.Models.SubscriptionPackage", b =>

@@ -2,35 +2,36 @@
 using Domain.Enums;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Persistance.Repositories
 {
     public class StationInventoryRepository : IStationInventoryRepository
     {
         private readonly EVSwappingV2Context _context;
-        private readonly EVSwappingV2Context _db;
+        private readonly ILogger<StationInventoryRepository> _logger;
 
-        public StationInventoryRepository(EVSwappingV2Context context)
+        public StationInventoryRepository(EVSwappingV2Context context, ILogger<StationInventoryRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
-        public async Task<StationInventory> GetInventory(int stationId, CancellationToken ct)
+
+        public async Task<StationInventory?> GetInventory(int stationId, CancellationToken ct)
         {
-            var query = await _db.StationInventories
-                .Include(si => si.Battery).ThenInclude(b => b.BatteryModel)
-                .Where(si => si.StationId == stationId)
-                .FirstOrDefaultAsync(ct);
-            return query;
+            return await _context.StationInventories
+                .Include(si => si.Battery)
+                    .ThenInclude(b => b.BatteryModel)
+                .FirstOrDefaultAsync(si => si.StationId == stationId, ct);
         }
 
         public async Task<IEnumerable<StationInventory>> GetInventorys(CancellationToken ct)
         {
-            var query = await _db.StationInventories
-                .Include(si => si.Battery).ThenInclude(b => b.BatteryModel)
+            return await _context.StationInventories
+                .Include(si => si.Battery)
+                    .ThenInclude(b => b.BatteryModel)
                 .ToListAsync(ct);
-            return query;
         }
-
 
         public async Task<IEnumerable<StationInventory>> GetByStationId(int stationId)
         {
@@ -53,6 +54,19 @@ namespace Infrastructure.Persistance.Repositories
                 query = query.Where(i => i.Battery.BatteryModelId == batteryModelId.Value);
 
             return await query.ToListAsync();
+        }
+
+        public async Task<List<int>> GetFullBatteryIdsByModel(int stationId, int batteryModelId)
+        {
+            return await _context.StationInventories
+                .Where(inv =>
+                    inv.StationId == stationId &&
+                    inv.Status == StationInventoryStatus.Full &&
+                    inv.Battery.Status == BatteryStatus.Full &&
+                    inv.Battery.BatteryModelId == batteryModelId)
+                .Select(inv => inv.BatteryId)
+                .Distinct()
+                .ToListAsync();
         }
 
         public async Task<int> CountAvailableBatteries(int stationId, int? batteryModelId = null)
@@ -116,6 +130,7 @@ namespace Infrastructure.Persistance.Repositories
                 .Where(si =>
                     si.StationId == stationId &&
                     si.Status == StationInventoryStatus.Full &&
+                    si.Battery.Status == BatteryStatus.Full &&
                     si.Battery.BatteryModelId == batteryModelId)
                 .Select(si => si.Battery)
                 .ToListAsync();
@@ -128,10 +143,10 @@ namespace Infrastructure.Persistance.Repositories
                 .FirstOrDefaultAsync(si => si.StationId == stationId && si.BatteryId == batteryId);
 
             if (inv == null)
-                throw new InvalidOperationException("Ko tìm thấy pin trong kho trạm.");
+                throw new InvalidOperationException($"Không tìm thấy pin #{batteryId} trong kho trạm #{stationId}.");
 
             if (inv.Status != StationInventoryStatus.Full)
-                throw new InvalidOperationException("Pin hiện không ở trạng thái sẵn sàng để giữ.");
+                throw new InvalidOperationException($"Pin #{batteryId} hiện không ở trạng thái sẵn sàng để giữ (trạng thái: {inv.Status}).");
 
             inv.Status = StationInventoryStatus.Held;
             inv.ReservationId = reservationId;
@@ -140,6 +155,8 @@ namespace Infrastructure.Persistance.Repositories
                 inv.Battery.Status = BatteryStatus.Held;
 
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"[MarkHeld] Battery #{batteryId} tại trạm #{stationId} đã được giữ cho Reservation #{reservationId}.");
         }
 
         public async Task MarkFull(int batteryId, int stationId)
@@ -148,16 +165,27 @@ namespace Infrastructure.Persistance.Repositories
                 .Include(si => si.Battery)
                 .FirstOrDefaultAsync(si => si.StationId == stationId && si.BatteryId == batteryId);
 
-            if (inv != null)
+            if (inv == null)
             {
-                inv.Status = StationInventoryStatus.Full;
-                inv.ReservationId = null;
-
-                if (inv.Battery != null)
-                    inv.Battery.Status = BatteryStatus.Full;
-
-                await _context.SaveChangesAsync();
+                _logger.LogWarning($"[MarkFull] Không tìm thấy pin #{batteryId} trong trạm #{stationId}.");
+                return;
             }
+
+            if (inv.Status != StationInventoryStatus.Held && inv.Status != StationInventoryStatus.Empty)
+            {
+                _logger.LogWarning($"[MarkFull] Bỏ qua Battery #{batteryId} (trạng thái hiện tại: {inv.Status}).");
+                return;
+            }
+
+            inv.Status = StationInventoryStatus.Full;
+            inv.ReservationId = null;
+
+            if (inv.Battery != null)
+                inv.Battery.Status = BatteryStatus.Full;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"[MarkFull] Battery #{batteryId} tại trạm #{stationId} đã được trả về trạng thái Full.");
         }
     }
 }

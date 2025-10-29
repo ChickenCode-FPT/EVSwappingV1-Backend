@@ -75,22 +75,36 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
 
         modelBuilder.Entity<Battery>(entity =>
         {
-            entity.HasKey(e => e.BatteryId).HasName("PK__Batterie__5710805E39AB72DF");
+            entity.HasKey(e => e.BatteryId)
+                  .HasName("PK__Batterie__5710805E39AB72DF");
 
-            entity.HasIndex(e => e.SerialNumber, "UQ__Batterie__048A00086C7A125E").IsUnique();
+            entity.HasIndex(e => e.SerialNumber, "UQ__Batterie__048A00086C7A125E")
+                  .IsUnique();
 
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
-            entity.Property(e => e.CurrentSoH).HasColumnType("decimal(5, 2)");
-            entity.Property(e => e.CycleCount).HasDefaultValue(0);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(SYSUTCDATETIME())");
+
+            entity.Property(e => e.CurrentSoH)
+                .HasColumnType("decimal(5, 2)");
+
+            entity.Property(e => e.CycleCount)
+                .HasDefaultValue(0);
+
             entity.Property(e => e.SerialNumber)
                 .IsRequired()
                 .HasMaxLength(200);
+
             entity.Property(e => e.Status)
                 .IsRequired()
                 .HasMaxLength(50)
-                .HasDefaultValue("Available");
+                .HasDefaultValue("Full");
 
-            entity.HasOne(d => d.BatteryModel).WithMany(p => p.Batteries)
+            entity.Property(e => e.RowVersion)
+                .IsRowVersion()
+                .IsConcurrencyToken();
+
+            entity.HasOne(d => d.BatteryModel)
+                .WithMany(p => p.Batteries)
                 .HasForeignKey(d => d.BatteryModelId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Batteries__Batte__59FA5E80");
@@ -189,21 +203,48 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
                 .IsRequired()
                 .HasMaxLength(10)
                 .HasDefaultValue("VND");
-            entity.Property(e => e.Method).HasMaxLength(50);
+            entity.Property(e => e.Method)
+                .HasMaxLength(50)
+                .HasDefaultValue("PayOS");
             entity.Property(e => e.Status)
                 .IsRequired()
                 .HasMaxLength(50)
-                .HasDefaultValue("Paid");
+                .HasDefaultValue("Pending");
+            entity.Property(e => e.Type)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasDefaultValue("SwapFee");
             entity.Property(e => e.TransactionRef).HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(500);
 
-            entity.HasOne(d => d.SwapTransaction).WithMany(p => p.Payments)
+            entity.HasOne(d => d.SwapTransaction)
+                .WithMany(p => p.Payments)
                 .HasForeignKey(d => d.SwapTransactionId)
                 .HasConstraintName("FK__Payments__SwapTr__03F0984C");
 
-            entity.HasOne(d => d.User).WithMany(p => p.Payments)
+            entity.HasOne(d => d.Reservation)
+                .WithMany(p => p.Payments)
+                .HasForeignKey(d => d.ReservationId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK__Payments__Reserv__05F0984D");
+
+            entity.HasOne(d => d.Subscription)
+                .WithMany(p => p.Payments)
+                .HasForeignKey(d => d.SubscriptionId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK__Payments__Subscr__06F0984E");
+
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.Payments)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Payments__UserId__04E4BC85");
+
+            entity.HasOne(d => d.ParentPayment)
+                .WithMany(p => p.ChildPayments)
+                .HasForeignKey(d => d.ParentPaymentId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK__Payments__Parent__07E4BC86");
         });
 
         modelBuilder.Entity<Rating>(entity =>
@@ -235,28 +276,32 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
                 .HasDefaultValueSql("(sysutcdatetime())");
 
             entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("(sysutcdatetime())"); 
+                .HasDefaultValueSql("(sysutcdatetime())");
 
             entity.Property(e => e.Status)
                 .IsRequired()
                 .HasMaxLength(50)
                 .HasDefaultValue("Pending");
 
-            entity.HasOne(d => d.ReservedBatteryModel).WithMany(p => p.Reservations)
+            entity.HasOne(d => d.ReservedBatteryModel)
+                .WithMany(p => p.Reservations)
                 .HasForeignKey(d => d.ReservedBatteryModelId)
                 .HasConstraintName("FK__Reservati__Reser__74AE54BC");
 
-            entity.HasOne(d => d.Station).WithMany(p => p.Reservations)
+            entity.HasOne(d => d.Station)
+                .WithMany(p => p.Reservations)
                 .HasForeignKey(d => d.StationId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Reservati__Stati__71D1E811");
 
-            entity.HasOne(d => d.User).WithMany(p => p.Reservations)
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.Reservations)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Reservati__UserI__70DDC3D8");
 
-            entity.HasOne(d => d.Vehicle).WithMany(p => p.Reservations)
+            entity.HasOne(d => d.Vehicle)
+                .WithMany(p => p.Reservations)
                 .HasForeignKey(d => d.VehicleId)
                 .HasConstraintName("FK__Reservati__Vehic__72C60C4A");
         });
@@ -313,12 +358,19 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
 
         modelBuilder.Entity<ReservationAllocation>(entity =>
         {
-            entity.ToTable("ReservationAllocations"); 
+            entity.ToTable("ReservationAllocations");
             entity.HasKey(e => e.ReservationAllocationId);
 
             entity.Property(e => e.Status)
                 .IsRequired()
-                .HasMaxLength(50);
+                .HasMaxLength(50)
+                .HasDefaultValue("Active");
+
+            entity.Property(e => e.AllocatedAt)
+                .HasDefaultValueSql("(SYSUTCDATETIME())");
+
+            entity.Property(e => e.HoldUntil)
+                .IsRequired();
 
             entity.HasOne(e => e.Reservation)
                 .WithMany(r => r.ReservationAllocations)
@@ -330,7 +382,11 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
                 .HasForeignKey(e => e.BatteryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasIndex(e => new { e.BatteryId, e.Status });
+            entity.HasIndex(e => new { e.BatteryId, e.Status })
+                .IsUnique()
+                .HasFilter("[Status] = 'Active'");
+
+            entity.HasIndex(e => new { e.ReservationId, e.Status });
         });
 
         modelBuilder.Entity<StationStaff>(entity =>
@@ -363,14 +419,16 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
             entity.Property(e => e.Status)
                 .IsRequired()
                 .HasMaxLength(50)
-                .HasDefaultValue("Active");
+                .HasDefaultValue("Pending");
 
-            entity.HasOne(d => d.Package).WithMany(p => p.Subscriptions)
+            entity.HasOne(d => d.Package)
+                .WithMany(p => p.Subscriptions)
                 .HasForeignKey(d => d.PackageId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Subscript__Packa__0F624AF8");
 
-            entity.HasOne(d => d.User).WithMany(p => p.Subscriptions)
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.Subscriptions)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Subscript__UserI__0E6E26BF");
@@ -422,30 +480,39 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
             entity.Property(e => e.SwapStatus)
                 .IsRequired()
                 .HasMaxLength(50)
-                .HasDefaultValue("Completed");
+                .HasDefaultValue("Pending");
+            entity.Property(e => e.PaymentType)
+                .HasMaxLength(50)
+                .HasDefaultValue("PayPerUse");
 
-            entity.HasOne(d => d.CustomerUser).WithMany(p => p.SwapTransactionCustomerUsers)
+            entity.HasOne(d => d.CustomerUser)
+                .WithMany(p => p.SwapTransactionCustomerUsers)
                 .HasForeignKey(d => d.CustomerUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__SwapTrans__Custo__7A672E12");
 
-            entity.HasOne(d => d.IncomingBattery).WithMany(p => p.SwapTransactionIncomingBatteries)
+            entity.HasOne(d => d.IncomingBattery)
+                .WithMany(p => p.SwapTransactionIncomingBatteries)
                 .HasForeignKey(d => d.IncomingBatteryId)
                 .HasConstraintName("FK__SwapTrans__Incom__7D439ABD");
 
-            entity.HasOne(d => d.OutgoingBattery).WithMany(p => p.SwapTransactionOutgoingBatteries)
+            entity.HasOne(d => d.OutgoingBattery)
+                .WithMany(p => p.SwapTransactionOutgoingBatteries)
                 .HasForeignKey(d => d.OutgoingBatteryId)
                 .HasConstraintName("FK__SwapTrans__Outgo__7C4F7684");
 
-            entity.HasOne(d => d.Reservation).WithMany(p => p.SwapTransactions)
+            entity.HasOne(d => d.Reservation)
+                .WithMany(p => p.SwapTransactions)
                 .HasForeignKey(d => d.ReservationId)
                 .HasConstraintName("FK__SwapTrans__Reser__787EE5A0");
 
-            entity.HasOne(d => d.StaffUser).WithMany(p => p.SwapTransactionStaffUsers)
+            entity.HasOne(d => d.StaffUser)
+                .WithMany(p => p.SwapTransactionStaffUsers)
                 .HasForeignKey(d => d.StaffUserId)
                 .HasConstraintName("FK__SwapTrans__Staff__7B5B524B");
 
-            entity.HasOne(d => d.Station).WithMany(p => p.SwapTransactions)
+            entity.HasOne(d => d.Station)
+                .WithMany(p => p.SwapTransactions)
                 .HasForeignKey(d => d.StationId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__SwapTrans__Stati__797309D9");

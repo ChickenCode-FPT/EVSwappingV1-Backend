@@ -10,6 +10,8 @@ namespace Application.Common.Interfaces.Repositories
         Task ReleaseByReservation(int reservationId, string reason);
         Task<int> CountHeldInWindow(int stationId, int batteryModelId, DateTime fromUtc, DateTime toUtc);
         Task<List<ReservationAllocation>> GetExpiredAllocations(DateTime nowUtc);
+        Task<HashSet<int>> GetOverlappingBatteryIds(IEnumerable<int> batteryIds, DateTime fromUtc, DateTime toUtc);
+        Task<bool> IsBatteryFreeInWindow(int batteryId, DateTime fromUtc, DateTime toUtc);
         Task SaveChanges();
     }
 }

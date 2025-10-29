@@ -15,5 +15,13 @@ namespace Application.Common.Interfaces.Repositories
         Task<List<SwapTransaction>> GetAll();
         Task<List<SwapTransaction>> GetAllWithStationAndReversation();
         Task<SwapTransaction?> GetAllWithStationAndReversationID(int id);
+        Task<IEnumerable<SwapTransaction>> GetAll2();
+        Task<SwapTransaction?> GetById2(long id);
+        Task<IEnumerable<SwapTransaction>> GetByUser(string userId);
+        Task<SwapTransaction> Add2(SwapTransaction swap);
+        Task Update2(SwapTransaction swap);
+        Task Delete2(long id);
+        Task<bool> ExistsByReservationId2(int reservationId);
+        Task SaveChanges();
     }
 }

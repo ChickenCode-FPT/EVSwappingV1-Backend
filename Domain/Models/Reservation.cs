@@ -19,20 +19,25 @@ public partial class Reservation
 
     public DateTime ReservedTo { get; set; }
 
-    public string Status { get; set; }
+    public string Status { get; set; } = Domain.Enums.ReservationStatus.Pending;
 
     public int? ReservedBatteryModelId { get; set; }
 
     public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public virtual BatteryModel ReservedBatteryModel { get; set; }
 
-    public virtual Station Station { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+
+    public virtual BatteryModel ReservedBatteryModel { get; set; } = default!;
+
+    public virtual Station Station { get; set; } = default!;
+
+    public virtual User User { get; set; } = default!;
+
+    public virtual Vehicle? Vehicle { get; set; }
+
+    public virtual ICollection<ReservationAllocation> ReservationAllocations { get; set; } = new List<ReservationAllocation>();
 
     public virtual ICollection<SwapTransaction> SwapTransactions { get; set; } = new List<SwapTransaction>();
 
-    public virtual User User { get; set; }
-
-    public virtual Vehicle Vehicle { get; set; }
-    public virtual ICollection<ReservationAllocation> ReservationAllocations { get; set; } = new List<ReservationAllocation>();
+    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }

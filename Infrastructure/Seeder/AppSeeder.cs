@@ -19,11 +19,18 @@ namespace Infrastructure.Seeder
             await IdentitySeeder.SeedRolesAsync(roleManager);
             await IdentitySeeder.SeedAdminAsync(userManager, roleManager);
 
-            // Stations
+            // Stations & Batteries
             await StationSeeder.SeedAsync(dbContext);
-
-            // Batteries
             await BatterySeeder.SeedAsync(dbContext);
+
+            // Users, Drivers, Vehicles
+            await UserDriverVehicleSeeder.SeedAsync(userManager, dbContext);
+
+            // Subscriptions
+            await SubscriptionSeeder.SeedAsync(dbContext);
+
+            // Reservations + Payments
+            await ReservationSeeder.SeedAsync(dbContext);
         }
     }
 }
