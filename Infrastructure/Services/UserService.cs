@@ -13,12 +13,15 @@ namespace Infrastructure.Services
         public readonly UserManager<User> _userManager;
         public readonly IConfiguration _config;
         private readonly EmailService _emailService;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public UserService(UserManager<User> userManager, IConfiguration config, EmailService emailService)
+
+        public UserService(UserManager<User> userManager, IConfiguration config, EmailService emailService, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _config = config;
             _emailService = emailService;
+            _roleManager = roleManager;
         }
         public async Task<List<string>> GetAllUserAsync()
         {
@@ -70,5 +73,25 @@ namespace Infrastructure.Services
             var result = await _userManager.UpdateAsync(user);
             return result.Succeeded;
         }
+        public async Task PromoteUserRoleAsync(string userId, string newRole, string changedByUserId, bool replaceExisting = true)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                throw new Exception("User not found");
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+
+            // Kiểm tra role có tồn tại không
+            if (!await _roleManager.RoleExistsAsync(newRole))
+                await _roleManager.CreateAsync(new IdentityRole(newRole));
+
+            if (replaceExisting)
+                await _userManager.RemoveFromRolesAsync(user, currentRoles);
+
+            await _userManager.AddToRoleAsync(user, newRole);
+            
+        }
+
+
     }
 }

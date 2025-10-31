@@ -134,6 +134,9 @@ namespace Infrastructure
             services.AddScoped<IPayOSClient, PayOSClient>();
             services.AddScoped<IPaymentGatewayClient, VnpayClient>();
 
+            services.AddScoped<IBatteryHealthLogsRepository, BatteryHealthLogsRepository>();
+            services.AddScoped<IStationStaffRepository, StationStaffRepository>();
+            services.AddScoped<IInterStationTransferRepository,InterStationTransferRepository>();
             return services;
         }
     }

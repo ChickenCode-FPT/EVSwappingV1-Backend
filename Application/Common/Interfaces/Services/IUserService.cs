@@ -6,5 +6,6 @@ namespace Application.Common.Interfaces.Services
     {
         Task<List<UserDto>> GetAllUserDtoAsync();
         Task<List<string>> GetAllUserAsync();
+        Task PromoteUserRoleAsync(string userId, string newRole, string changedByUserId, bool replaceExisting = true);
     }
 }
