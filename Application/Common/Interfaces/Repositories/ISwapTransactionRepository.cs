@@ -1,4 +1,4 @@
-﻿using Domain.Models;
+using Domain.Models;
 
 namespace Application.Common.Interfaces.Repositories
 {
@@ -15,5 +15,8 @@ namespace Application.Common.Interfaces.Repositories
         Task<List<SwapTransaction>> GetAll();
         Task<List<SwapTransaction>> GetAllWithStationAndReversation();
         Task<SwapTransaction?> GetAllWithStationAndReversationID(int id);
+
+        Task<int> GetSwapCountAsync(DateTime startDate, DateTime endDate);
+        Task<Dictionary<int, int>> GetPeakHoursAsync(DateTime startDate, DateTime endDate);
     }
 }

@@ -1,4 +1,4 @@
-﻿using Application.Common.Interfaces.Repositories;
+using Application.Common.Interfaces.Repositories;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -92,5 +92,19 @@ namespace Infrastructure.Persistance.Repositories
 
             _context.SaveChanges();
         }
+
+    public async Task<int> GetSwapCountAsync(DateTime startDate, DateTime endDate)
+    {
+        return await _context.SwapTransactions
+            .CountAsync(s => s.SwapStartedAt >= startDate && s.SwapStartedAt <= endDate);
+    }
+
+    public async Task<Dictionary<int, int>> GetPeakHoursAsync(DateTime startDate, DateTime endDate)
+    {
+        return await _context.SwapTransactions
+            .Where(s => s.SwapStartedAt >= startDate && s.SwapStartedAt <= endDate)
+            .GroupBy(s => s.SwapStartedAt.Hour)
+            .ToDictionaryAsync(g => g.Key, g => g.Count());
+    }
     }
 }
