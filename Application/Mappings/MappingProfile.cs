@@ -1,4 +1,5 @@
 ﻿using Application.Batteries.Commands;
+using Application.Dtos;
 using Application.Dtos.Battery;
 using Application.Dtos.Driver;
 using Application.Dtos.Payment;
@@ -174,15 +175,18 @@ namespace Application.Mappings
             CreateMap<SwapTransaction, SwapTransactionDto2>().ReverseMap();
             CreateMap<CreateSwapTransactionRequest, SwapTransaction>();
             CreateMap<CompleteSwapTransactionRequest, SwapTransaction>();
+
             //batteryHealthLogs
             CreateMap<BatteryHealthLog, BatteryHealthLogsDto>()
                 .ForMember(dest => dest.SerialNumber, opt => opt.MapFrom(src => src.Battery.SerialNumber));
             CreateMap<CreateBatteryHealthLogDto, BatteryHealthLog>()
                .ForMember(dest => dest.BatteryId, opt => opt.Ignore());
+
             //staionStaff
             CreateMap<StationStaff, StationStaffDto>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email));
+
             //interStationTransfer
             CreateMap<InterStationTransfer, InterStationTransferDto>()
             .ForMember(dest => dest.FromStationName, opt => opt.MapFrom(src => src.FromStation.Name))
