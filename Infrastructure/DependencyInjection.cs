@@ -102,6 +102,9 @@ namespace Infrastructure
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRevenueRepository, RevenueRepository>();
 
+            services.AddHttpClient();
+            services.AddScoped<IChatbotService, ChatbotService>();
+
             return services;
         }
     }
