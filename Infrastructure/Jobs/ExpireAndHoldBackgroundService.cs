@@ -33,11 +33,9 @@ namespace Infrastructure.Jobs
             var now = DateTime.UtcNow;
             _logger.LogInformation("=== [ExpireAndHoldBackgroundService] Tick at {time} ===", now);
 
-            var soonReservations = (await _reservationRepo.GetPendingReservations())
-                .Where(r => r.ReservedFrom > now && r.ReservedFrom <= now.AddMinutes(10))
-                .ToList();
+            var reservations = await _reservationRepo.GetPendingReservationsBetween(now, now.AddMinutes(10));
 
-            foreach (var res in soonReservations)
+            foreach (var res in reservations)
             {
                 try
                 {
@@ -75,6 +73,7 @@ namespace Infrastructure.Jobs
             }
 
             var pending = await _reservationRepo.GetPendingReservations();
+
             foreach (var res in pending)
             {
                 try

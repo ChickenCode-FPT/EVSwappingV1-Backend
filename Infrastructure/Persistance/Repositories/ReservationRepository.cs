@@ -173,5 +173,18 @@ namespace Infrastructure.Persistance.Repositories
                 .Include(r => r.ReservationAllocations)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Reservation>> GetPendingReservationsBetween(DateTime start, DateTime end)
+        {
+            return await _context.Reservations
+                .Where(r => r.Status == ReservationStatus.Pending
+                            && r.ReservedFrom >= start
+                            && r.ReservedFrom <= end)
+                .Include(r => r.ReservationAllocations)
+                    .ThenInclude(a => a.Battery)
+                .Include(r => r.Station)
+                .Include(r => r.User)
+                .ToListAsync();
+        }
     }
 }

@@ -15,10 +15,6 @@ namespace Infrastructure.Services
             { "car", "http://127.0.0.1:5000" },
             { "motorbike", "http://127.0.0.1:5001" },
             { "truck", "http://127.0.0.1:5002" }
-            // hc dung proxy:
-            // { "car", "http://127.0.0.1:8080/car" },
-            // { "motorbike", "http://127.0.0.1:8080/motorbike" },
-            // { "truck", "http://127.0.0.1:8080/truck" },
         };
 
         public OSRMService(HttpClient httpClient, ILogger<OSRMService> logger)
@@ -31,6 +27,7 @@ namespace Infrastructure.Services
         {
             if (!_baseUrls.TryGetValue(profile.ToLower(), out var url))
                 throw new ArgumentException($"Profile không hợp lệ: {profile}");
+
             return url;
         }
 
@@ -40,7 +37,9 @@ namespace Infrastructure.Services
             string profile = "car")
         {
             var baseUrl = GetBaseUrl(profile);
+
             var destList = destinations.ToList();
+
             if (!destList.Any())
                 throw new ArgumentException("Không có destination hợp lệ để tính OSRM table.");
 
@@ -48,9 +47,8 @@ namespace Infrastructure.Services
                 .Concat(destList.Select(s => s.ToString())));
 
             var destIdx = string.Join(";", Enumerable.Range(1, destList.Count));
-            var url = $"{baseUrl}/table/v1/driving/{coords}?annotations=distance,duration&sources=0&destinations={destIdx}";
 
-            _logger.LogDebug("OSRM Table API ({Profile}) gọi: {Url}", profile, url);
+            var url = $"{baseUrl}/table/v1/driving/{coords}?annotations=distance,duration&sources=0&destinations={destIdx}";
 
             var response = await _http.GetFromJsonAsync<OsrmTableResponse>(url);
 
@@ -67,8 +65,6 @@ namespace Infrastructure.Services
         {
             var baseUrl = GetBaseUrl(profile);
             var url = $"{baseUrl}/route/v1/driving/{start};{end}?overview=full&geometries=polyline";
-
-            _logger.LogDebug("OSRM Route API ({Profile}) gọi: {Url}", profile, url);
 
             var response = await _http.GetFromJsonAsync<OsrmRouteResponse>(url);
 

@@ -112,13 +112,7 @@ namespace Infrastructure.Services
 
         public async Task<PaymentStatusResponseDto?> GetPaymentStatusAsync(string orderCode)
         {
-            await Task.Delay(50);
-            return new PaymentStatusResponseDto
-            {
-                Code = "00",
-                Status = "PAID",
-                Amount = 0
-            };
+            return null;
         }
 
         public async Task<RefundResultDto> CreateRefundAsync(Payment originalPayment, RefundRequestDto request)
