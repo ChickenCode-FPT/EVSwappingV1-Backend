@@ -28,16 +28,6 @@ namespace Infrastructure.Persistance.Repositories
                 .ToListAsync();
         }
 
-        public async Task<int> CountAvailableBatteries(int stationId)
-        {
-            return await _context.StationInventories
-                .Include(i => i.Battery)
-                .CountAsync(i =>
-                    i.StationId == stationId &&
-                    i.Status == StationInventoryStatus.Full &&
-                    i.Battery.Status == BatteryStatus.Full);
-        }
-
         public async Task Add(Station station)
         {
             await _context.Stations.AddAsync(station);

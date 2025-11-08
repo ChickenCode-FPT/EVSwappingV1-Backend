@@ -34,8 +34,8 @@ namespace Application.Services
 
         public async Task<IEnumerable<BatteryDto>> GetAvailableBatteries(int stationId, int? batteryModelId = null)
         {
-            var inventories = await _inventoryRepo.GetAvailableBatteries(stationId, batteryModelId);
-            return _mapper.Map<IEnumerable<BatteryDto>>(inventories.Select(i => i.Battery));
+            var invs = await _inventoryRepo.GetAvailableBatteries(stationId, batteryModelId);
+            return _mapper.Map<IEnumerable<BatteryDto>>(invs.Select(i => i.Battery));
         }
 
         public Task<Battery?> GetById(int id)

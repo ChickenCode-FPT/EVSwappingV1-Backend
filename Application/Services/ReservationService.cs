@@ -43,11 +43,17 @@ namespace Application.Services
 
         public async Task<ReservationDto> CreateReservation(CreateReservationRequest request)
         {
-            var userId = _currentUser.UserId
-                ?? throw new UnauthorizedAccessException("Không xác định được người dùng.");
+            var userId = _currentUser.UserId;
+            if (userId == null)
+            {
+                throw new UnauthorizedAccessException("Ko xác định dc ng dùng");
+            }
 
-            var user = await _userRepo.GetByIdWithDetailsAsync(userId)
-                ?? throw new InvalidOperationException("Không tìm thấy thông tin người dùng.");
+            var user = await _userRepo.GetByIdWithDetailsAsync(userId);
+            if(user == null)
+            {
+                throw new InvalidOperationException("Ko tìm thấy thông tin ng dùng");
+            }
 
             if (user.Driver == null)
                 throw new InvalidOperationException("Bạn cần đăng ký tài xế trước khi đặt lịch.");

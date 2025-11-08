@@ -7,6 +7,7 @@
         public string BillingCycle { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public int IncludedSwaps { get; set; }
+        public string Status { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

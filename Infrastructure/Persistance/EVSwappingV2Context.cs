@@ -446,6 +446,10 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
                 .IsRequired()
                 .HasMaxLength(200);
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasDefaultValue("Draft");
         });
 
         modelBuilder.Entity<SupportTicket>(entity =>
