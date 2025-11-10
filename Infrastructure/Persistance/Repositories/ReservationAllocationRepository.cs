@@ -19,6 +19,12 @@ namespace Infrastructure.Persistance.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task Update(ReservationAllocation allocation)
+        {
+            _context.ReservationAllocations.Update(allocation);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<ReservationAllocation?> GetActiveByBattery(int batteryId, DateTime fromUtc, DateTime toUtc)
         {
             return await _context.ReservationAllocations
@@ -96,6 +102,8 @@ namespace Infrastructure.Persistance.Repositories
                 a.Reservation.ReservedFrom < toUtc);
         }
 
-        public async Task SaveChanges() => await _context.SaveChangesAsync();
+        public async Task SaveChanges() {
+            await _context.SaveChangesAsync();
+        }
     }
 }

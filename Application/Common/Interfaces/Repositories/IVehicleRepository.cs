@@ -4,6 +4,7 @@ namespace Application.Common.Interfaces.Repositories
 {
     public interface IVehicleRepository
     {
+        Task<bool> IsValidVehicleByUser(string userId, int vehicleId);
         Task<Vehicle?> GetById(int vehicleId);
         Task<IEnumerable<Vehicle>> GetByUserId(string userId);
         Task Add(Vehicle vehicle);

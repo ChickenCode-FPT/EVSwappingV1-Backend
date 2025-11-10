@@ -25,56 +25,6 @@ namespace EVSwapping.Controllers
             return Ok(result);
         }
 
-        [HttpPost("penalty")]
-        public async Task<IActionResult> CreatePenalty([FromBody] PenaltyPaymentDto dto)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-            var result = await _paymentService.CreatePenalty(dto);
-            return Ok(result);
-        }
-
-        [HttpPost("refund")]
-        public async Task<IActionResult> CreateRefund([FromBody] RefundRequestDto dto)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-            var result = await _paymentService.CreateRefund(dto);
-            return Ok(result);
-        }
-
-        [HttpGet("vnpay-callback")]
-        public async Task<IActionResult> VnpayCallback()
-        {
-            var query = Request.Query;
-            var dto = new PaymentWebhookDto
-            {
-                OrderCode = query["vnp_TxnRef"],
-                Status = query["vnp_ResponseCode"] == "00" ? "PAID" : "FAILED",
-                Amount = decimal.Parse(query["vnp_Amount"]) / 100,
-                Signature = query["vnp_SecureHash"],
-                RawData = query.ToString()
-            };
-
-            var result = await _paymentService.HandleWebhook(dto);
-            if (result == null)
-                return NotFound(new { message = "Payment not found for VNPAY transaction." });
-
-            return Redirect($"https://app.ev-swap.vn/payment-success?order={dto.OrderCode}&status={dto.Status}");
-        }
-
-        [HttpPost("sync")]
-        public async Task<IActionResult> SyncPendingPayments()
-        {
-            await _paymentService.SyncPendingPaymentsAsync();
-            return Ok(new { message = "Pending payments synchronized successfully." });
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAllPayments()
-        {
-            return Ok(await _paymentService.GetAllPayments());
-        }
-
-
         [HttpGet("{id:long}")]
         public async Task<IActionResult> GetPaymentById(long id)
         {
