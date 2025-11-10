@@ -33,7 +33,6 @@ namespace Application.Services
             _logger = logger;
         }
 
-        // 🧩 Tạo thanh toán đặt cọc
         public async Task<PaymentResponseDto> CreatePayment(PaymentCreateDto dto)
         {
             var payment = _mapper.Map<Payment>(dto);
@@ -54,7 +53,6 @@ namespace Application.Services
             return gatewayResp;
         }
 
-        // 🧩 Cập nhật trạng thái thanh toán (qua webhook hoặc poll)
         public async Task<PaymentResponseDto?> UpdatePaymentStatus(PaymentStatusUpdateDto dto)
         {
             var payment = await _paymentRepo.GetByTransactionRef(dto.OrderCode);
@@ -89,7 +87,6 @@ namespace Application.Services
             return _mapper.Map<PaymentResponseDto>(payment);
         }
 
-        // 🧩 Khi thanh toán thành công → xác nhận reservation
         public async Task UpdateLinkedEntitiesAfterPayment(Payment payment)
         {
             if (payment.Status != PaymentStatus2.Paid)

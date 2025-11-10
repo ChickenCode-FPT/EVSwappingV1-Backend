@@ -75,7 +75,6 @@ namespace Application.Services
             if (fromUtc < DateTime.UtcNow.AddMinutes(10))
                 throw new InvalidOperationException("Phải đặt trước ít nhất 10 phút.");
 
-            // Kiểm tra lịch trùng
             var existing = await _reservationRepo.GetByUserId(userId);
             if (existing.Any(r => r.Status == ReservationStatus.Pending &&
                                   r.ReservedFrom < toUtc && r.ReservedTo > fromUtc))
@@ -124,7 +123,6 @@ namespace Application.Services
             var dto = _mapper.Map<ReservationDto>(reservation);
             dto.Allocation = _mapper.Map<ReservationAllocationDto>(allocation);
 
-            // ✅ Tạo thanh toán đặt cọc
             try
             {
                 var paymentDto = new PaymentCreateDto
@@ -152,7 +150,6 @@ namespace Application.Services
             return dto;
         }
 
-        // 🧩 Hủy đặt lịch
         public async Task CancelReservation(CancelReservationRequest request)
         {
             var userId = _currentUser.UserId ?? throw new UnauthorizedAccessException("Không xác định người dùng.");
@@ -168,7 +165,6 @@ namespace Application.Services
             await tx.CommitAsync();
         }
 
-        // 🧩 Danh sách đặt lịch của tôi
         public async Task<IEnumerable<ReservationDto>> GetMyReservations()
         {
             var userId = _currentUser.UserId ?? throw new UnauthorizedAccessException("Không xác định người dùng.");
