@@ -2,15 +2,10 @@
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.Repositories
 {
-    public class BatteryHealthLogsRepository :IBatteryHealthLogsRepository
+    public class BatteryHealthLogsRepository : IBatteryHealthLogsRepository
     {
         private readonly EVSwappingV2Context _context;
         private readonly ILogger<BatteryHealthLog> _logger;
@@ -26,12 +21,12 @@ namespace Infrastructure.Persistance.Repositories
         {
             try
             {
-               var logs = await _context.BatteryHealthLogs
-                    .AsNoTracking()
-                    .Include(x => x.Battery)
-                    .OrderBy(x => x.BatteryId)
-                    .ThenBy(x => x.RecordedAt)
-                    .ToListAsync();
+                var logs = await _context.BatteryHealthLogs
+                     .AsNoTracking()
+                     .Include(x => x.Battery)
+                     .OrderBy(x => x.BatteryId)
+                     .ThenBy(x => x.RecordedAt)
+                     .ToListAsync();
                 return logs;
             }
             catch (Exception ex)

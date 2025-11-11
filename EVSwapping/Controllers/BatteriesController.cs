@@ -1,5 +1,5 @@
 ﻿using Application.Batteries.Commands;
-using Application.Dtos;
+using Application.Dtos.Battery;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

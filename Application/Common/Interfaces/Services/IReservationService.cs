@@ -1,4 +1,4 @@
-﻿using Application.Dtos;
+﻿using Application.Dtos.Reservation;
 
 namespace Application.Common.Interfaces.Services
 {

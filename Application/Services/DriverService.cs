@@ -1,7 +1,7 @@
 ﻿using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
 using Application.Common.Interfaces.Services.Application.Common.Interfaces.Services;
-using Application.Dtos;
+using Application.Dtos.Driver;
 using AutoMapper;
 using Domain.Models;
 
@@ -25,12 +25,19 @@ namespace Application.Services
 
         public async Task<RegisterDriverResponse> RegisterDriver(RegisterDriverRequest request)
         {
-            var userId = _currentUser.UserId
-                ?? throw new UnauthorizedAccessException("Không xác định được người dùng.");
+            var userId = _currentUser.UserId;
 
-            var existing = await _driverRepository.GetByUserId(userId);
-            if (existing != null)
-                throw new InvalidOperationException("Bạn đã đăng ký làm tài xế trước đó.");
+            if (_currentUser.UserId == null)
+            {
+                throw new UnauthorizedAccessException("Ko xác định dc ng dùng.");
+            }
+
+            var eDriver = await _driverRepository.GetByUserId(userId);
+
+            if (eDriver != null)
+            {
+                throw new InvalidOperationException("Bạn đã đk làm tài xế trc đó.");
+            }
 
             var driver = new Driver
             {
@@ -40,8 +47,9 @@ namespace Application.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            var saved = await _driverRepository.Add(driver);
-            return _mapper.Map<RegisterDriverResponse>(saved);
+            var savedDriver = await _driverRepository.Add(driver);
+
+            return _mapper.Map<RegisterDriverResponse>(savedDriver);
         }
     }
 }

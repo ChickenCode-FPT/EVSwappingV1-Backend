@@ -1,4 +1,4 @@
-﻿using Application.Dtos;
+﻿using Application.Dtos.Station;
 
 namespace Application.Common.Interfaces
 {

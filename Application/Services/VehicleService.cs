@@ -1,8 +1,7 @@
 ﻿using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
 using Application.Common.Interfaces.Services.Application.Common.Interfaces.Services;
-using Application.Dtos;
-using Application.Dtos.Requests;
+using Application.Dtos.User;
 using AutoMapper;
 using Domain.Models;
 

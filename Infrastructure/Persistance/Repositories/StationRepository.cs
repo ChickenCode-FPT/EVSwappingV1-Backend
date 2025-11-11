@@ -1,5 +1,4 @@
 ﻿using Application.Common.Interfaces.Repositories;
-using Domain.Enums;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,16 +25,6 @@ namespace Infrastructure.Persistance.Repositories
             return await _context.Stations
                 .Include(s => s.StationInventories)
                 .ToListAsync();
-        }
-
-        public async Task<int> CountAvailableBatteries(int stationId)
-        {
-            return await _context.StationInventories
-                .Include(i => i.Battery)
-                .CountAsync(i =>
-                    i.StationId == stationId &&
-                    i.Status == StationInventoryStatus.Full &&
-                    i.Battery.Status == BatteryStatus.Full);
         }
 
         public async Task Add(Station station)

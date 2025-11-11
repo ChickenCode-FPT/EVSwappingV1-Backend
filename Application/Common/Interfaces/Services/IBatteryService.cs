@@ -1,4 +1,4 @@
-﻿using Application.Dtos;
+﻿using Application.Dtos.Battery;
 using Domain.Models;
 
 namespace Application.Common.Interfaces.Services

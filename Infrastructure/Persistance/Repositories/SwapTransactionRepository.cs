@@ -1,4 +1,5 @@
 ﻿using Application.Common.Interfaces.Repositories;
+using Domain.Enums;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -126,13 +127,27 @@ namespace Infrastructure.Persistance.Repositories
         }
 
         public async Task<bool> ExistsByReservationId2(int reservationId)
-        { 
+        {
             return await _context.SwapTransactions.AnyAsync(s => s.ReservationId == reservationId);
         }
 
         public async Task SaveChanges()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<SwapTransaction>> GetCompletedWithoutPenalty(DateTime beforeTime)
+        {
+            return await _context.SwapTransactions
+                .Where(s =>
+                    s.SwapStatus == SwapStatus.Completed &&
+                    s.SwapFinishedAt != null &&
+                    s.SwapFinishedAt <= beforeTime &&
+                    !s.Payments.Any(p => p.Type == PaymentType.Penalty))
+                .Include(s => s.Payments)
+                .Include(s => s.CustomerUser)
+                .Include(s => s.Station)
+                .ToListAsync();
         }
     }
 }

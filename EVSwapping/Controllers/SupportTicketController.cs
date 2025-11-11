@@ -1,5 +1,5 @@
 using Application.Common.Interfaces.Services;
-using Application.Dtos;
+using Application.Dtos.User;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EVSwapping.Controllers

@@ -19,6 +19,8 @@ public partial class BatteryModel
 
     public string CompatibleVehicleTypes { get; set; } = string.Empty;
 
+    public decimal ReservationDepositFee { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public virtual ICollection<Battery> Batteries { get; set; } = new List<Battery>();

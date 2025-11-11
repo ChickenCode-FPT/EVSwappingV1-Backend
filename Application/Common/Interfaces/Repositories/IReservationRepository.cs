@@ -21,5 +21,7 @@ namespace Application.Common.Interfaces.Repositories
         Task<IEnumerable<Reservation>> GetCompletedReservations();
         Task<IEnumerable<Reservation>> GetByDateRange(DateTime start, DateTime end);
         Task<IDbContextTransaction> BeginTransactionAsync();
+        Task<IEnumerable<Reservation>> GetByStatus(string status);
+        Task<IEnumerable<Reservation>> GetPendingReservationsBetween(DateTime start, DateTime end);
     }
 }

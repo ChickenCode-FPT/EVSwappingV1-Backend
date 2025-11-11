@@ -2,10 +2,13 @@
 using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
 using Application.Common.Interfaces.Services.Application.Common.Interfaces.Services;
-using Application.Dtos;
+using Application.Common.IRespositories;
+using Application.Dtos.Payment;
+using Application.Dtos.Reservation;
 using AutoMapper;
 using Domain.Enums;
 using Domain.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services
 {
@@ -16,9 +19,11 @@ namespace Application.Services
         private readonly IReservationAllocationRepository _reservationAllocationRepo;
         private readonly IUserRepository _userRepo;
         private readonly ICurrentUserService _currentUser;
-        private readonly ISubscriptionRepository _subscriptionRepo;
         private readonly IPaymentService _paymentService;
+        private readonly IVehicleRepository _vehicleRepo;
+        private readonly IBatteryModelRepository _batteryModelRepo;
         private readonly IMapper _mapper;
+        private readonly ILogger<ReservationService> _logger;
 
         public ReservationService(
             IReservationRepository reservationRepo,
@@ -26,150 +31,159 @@ namespace Application.Services
             IReservationAllocationRepository reservationAllocationRepo,
             IUserRepository userRepo,
             ICurrentUserService currentUser,
-            ISubscriptionRepository subscriptionRepo,
             IPaymentService paymentService,
-            IMapper mapper)
+            IVehicleRepository vehicleRepo,
+            IBatteryModelRepository batteryModelRepo,
+            IMapper mapper,
+            ILogger<ReservationService> logger)
         {
             _reservationRepo = reservationRepo;
             _inventoryRepo = inventoryRepo;
             _reservationAllocationRepo = reservationAllocationRepo;
             _userRepo = userRepo;
             _currentUser = currentUser;
-            _subscriptionRepo = subscriptionRepo;
             _paymentService = paymentService;
+            _vehicleRepo = vehicleRepo;
+            _batteryModelRepo = batteryModelRepo;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<ReservationDto> CreateReservation(CreateReservationRequest request)
         {
-            var userId = _currentUser.UserId
-                ?? throw new UnauthorizedAccessException("Không xác định được người dùng.");
+            var userId = _currentUser.UserId;
+            if (userId == null)
+            {
+                throw new UnauthorizedAccessException("Không xác định người dùng.");
+            }
 
-            var user = await _userRepo.GetByIdWithDetailsAsync(userId)
-                ?? throw new InvalidOperationException("Không tìm thấy thông tin người dùng.");
+            var user = await _userRepo.GetByIdWithDetailsAsync(userId);
+            if(user == null)
+            {
+                throw new InvalidOperationException("Không tìm thấy thông tin người dùng.");
+            }
+
 
             if (user.Driver == null)
+            {
                 throw new InvalidOperationException("Bạn cần đăng ký tài xế trước khi đặt lịch.");
+            }
 
-            var vehicle = request.VehicleId.HasValue
-                ? user.Vehicles.FirstOrDefault(v => v.VehicleId == request.VehicleId.Value)
-                : user.Vehicles.FirstOrDefault();
+            if (!request.VehicleId.HasValue)
+            {
+                throw new InvalidOperationException("Chưa chọn phương tiện hợp lệ.");
+            }
 
-            if (vehicle == null)
-                throw new InvalidOperationException("Bạn chưa có phương tiện hợp lệ.");
+            if (!await _vehicleRepo.IsValidVehicleByUser(userId, request.VehicleId.Value))
+            {
+                throw new InvalidOperationException("Phương tiện không hợp lệ.");
+            }
 
+            var vehicle = await _vehicleRepo.GetById(request.VehicleId.Value);
             if (vehicle.BatteryModelPreferenceId == null)
-                throw new InvalidOperationException("Phương tiện của bạn chưa được gán model pin phù hợp.");
+            {
+                throw new InvalidOperationException("Xe chưa gán model pin phù hợp.");
+            }
 
-            var modelId = vehicle.BatteryModelPreferenceId.Value;
             var fromUtc = request.ReservedFrom.ToUniversalTime();
             var toUtc = request.ReservedTo.ToUniversalTime();
 
             if (toUtc <= fromUtc)
+            {
                 throw new InvalidOperationException("Thời gian đặt không hợp lệ.");
+            }
+
             if ((toUtc - fromUtc).TotalMinutes > 90)
-                throw new InvalidOperationException("Thời lượng đặt tối đa là 90 phút.");
+            {
+                throw new InvalidOperationException("Thời lượng đặt tối đa 90 phút.");
+            }
+
             if (fromUtc < DateTime.UtcNow.AddMinutes(10))
-                throw new InvalidOperationException("Bạn chỉ được đặt trước ít nhất 10 phút.");
+            {
+                throw new InvalidOperationException("Phải đặt trước ít nhất 10 phút.");
+            }
 
-            var existing = await _reservationRepo.GetByUserId(userId);
-            if (existing.Any(r => r.Status == ReservationStatus.Pending &&
-                                  r.ReservedFrom < toUtc &&
-                                  r.ReservedTo > fromUtc))
+            var userRese = await _reservationRepo.GetByUserId(userId);
+            if (userRese.Any(r => r.Status == ReservationStatus.Pending && r.ReservedFrom < toUtc && r.ReservedTo > fromUtc))
+            {
                 throw new InvalidOperationException("Bạn đã có lịch trùng thời gian.");
+            }
 
-            var sub = (await _subscriptionRepo.GetByUser(userId))
-                .FirstOrDefault(s => s.Status == SubscriptionStatus.Active && s.EndDate >= DateTime.UtcNow);
+            var batteryModel = await _batteryModelRepo.GetById(vehicle.BatteryModelPreferenceId.Value);
+            if (batteryModel == null)
+            {
+                throw new InvalidOperationException("Không tìm thấy thông tin model pin.");
+            }
 
             Reservation reservation;
             ReservationAllocation allocation;
 
             using (var transaction = await _reservationRepo.BeginTransactionAsync())
             {
-                try
+                var candidateIds = await _inventoryRepo.GetFullBatteryIdsByModel(request.StationId, vehicle.BatteryModelPreferenceId.Value);
+                if (!candidateIds.Any())
                 {
-                    var candidateIds = await _inventoryRepo.GetFullBatteryIdsByModel(request.StationId, modelId);
-                    if (!candidateIds.Any())
-                        throw new InvalidOperationException("Không còn pin đầy phù hợp.");
-
-                    var overlappingIds = await _reservationAllocationRepo
-                        .GetOverlappingBatteryIds(candidateIds, fromUtc, toUtc);
-
-                    var freeBatteryId = candidateIds.Except(overlappingIds).FirstOrDefault();
-                    if (freeBatteryId == 0)
-                        throw new InvalidOperationException("Tất cả pin phù hợp đang được giữ. Vui lòng chọn khung giờ khác.");
-
-                    var stillFree = await _reservationAllocationRepo
-                        .IsBatteryFreeInWindow(freeBatteryId, fromUtc, toUtc);
-                    if (!stillFree)
-                        throw new InvalidOperationException("Pin vừa được giữ bởi người khác. Thử lại.");
-
-                    reservation = new Reservation
-                    {
-                        UserId = userId,
-                        StationId = request.StationId,
-                        VehicleId = vehicle.VehicleId,
-                        ReservedFrom = fromUtc,
-                        ReservedTo = toUtc,
-                        ReservedBatteryModelId = modelId,
-                        Status = ReservationStatus.Pending,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    await _reservationRepo.Add(reservation);
-
-                    allocation = new ReservationAllocation
-                    {
-                        ReservationId = reservation.ReservationId,
-                        BatteryId = freeBatteryId,
-                        AllocatedAt = DateTime.UtcNow,
-                        HoldUntil = fromUtc.AddMinutes(15),
-                        Status = ReservationAllocationStatus.Active
-                    };
-                    await _reservationAllocationRepo.Add(allocation);
-
-                    await transaction.CommitAsync();
+                    throw new InvalidOperationException("Không còn pin đầy phù hợp.");
                 }
-                catch
+
+                var overlapping = await _reservationAllocationRepo.GetOverlappingBatteryIds(candidateIds, fromUtc, toUtc);
+                var freeBatteryId = candidateIds.Except(overlapping).FirstOrDefault();
+                if (freeBatteryId == 0)
                 {
-                    throw;
+                    throw new InvalidOperationException("Tất cả pin phù hợp đang được giữ.");
                 }
+
+                reservation = new Reservation
+                {
+                    UserId = userId,
+                    StationId = request.StationId,
+                    VehicleId = vehicle.VehicleId,
+                    ReservedFrom = fromUtc,
+                    ReservedTo = toUtc,
+                    ReservedBatteryModelId = vehicle.BatteryModelPreferenceId.Value,
+                    Status = ReservationStatus.Pending,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _reservationRepo.Add(reservation);
+
+                allocation = new ReservationAllocation
+                {
+                    ReservationId = reservation.ReservationId,
+                    BatteryId = freeBatteryId,
+                    AllocatedAt = DateTime.UtcNow,
+                    HoldUntil = fromUtc.AddMinutes(15),
+                    Status = ReservationAllocationStatus.Active
+                };
+                await _reservationAllocationRepo.Add(allocation);
+
+                await transaction.CommitAsync();
             }
 
             var dto = _mapper.Map<ReservationDto>(reservation);
             dto.Allocation = _mapper.Map<ReservationAllocationDto>(allocation);
 
-            if (sub == null)
+            try
             {
-                try
+                var paymentDto = new PaymentCreateDto
                 {
-                    var paymentDto = new PaymentCreateDto
-                    {
-                        UserId = userId,
-                        ReservationId = reservation.ReservationId,
-                        Type = PaymentType.ReservationDeposit,
-                        Amount = 50000,
-                        Currency = "VND",
-                        Description = $"Deposit for reservation #{reservation.ReservationId}",
-                        Method = "VNPAY"
-                    };
+                    UserId = userId,
+                    ReservationId = reservation.ReservationId,
+                    Type = PaymentType.ReservationDeposit,
+                    Amount = batteryModel.ReservationDepositFee,
+                    Currency = "VND",
+                    Description = $"Deposit for reservation #{reservation.ReservationId}",
+                    Method = "VNPAY"
+                };
 
-                    var paymentResponse = await _paymentService.CreatePayment(paymentDto);
-                    dto.PaymentCheckoutUrl = paymentResponse.CheckoutUrl;
-                    dto.PaymentId = paymentResponse.PaymentId;
-                    dto.PaymentStatus = paymentResponse.Status;
-                }
-                catch (Exception ex)
-                {
-                    reservation.Status = ReservationStatus.Cancelled;
-                    await _reservationRepo.Update(reservation);
-                    throw new InvalidOperationException($"Không thể tạo thanh toán đặt cọc: {ex.Message}", ex);
-                }
+                var paymentResp = await _paymentService.CreatePayment(paymentDto);
+                dto.PaymentCheckoutUrl = paymentResp.CheckoutUrl;
+                dto.PaymentId = paymentResp.PaymentId;
+                dto.PaymentStatus = paymentResp.Status;
             }
-            else
+            catch (Exception ex)
             {
-                reservation.Status = ReservationStatus.Confirmed;
-                await _reservationRepo.Update(reservation);
-                dto.Status = reservation.Status;
+                _logger.LogError(ex, "Không thể tạo thanh toán đặt cọc.");
+                throw new InvalidOperationException("Lỗi tạo thanh toán đặt cọc, vui lòng thử lại.");
             }
 
             return dto;
@@ -177,25 +191,39 @@ namespace Application.Services
 
         public async Task CancelReservation(CancelReservationRequest request)
         {
-            var userId = _currentUser.UserId ?? throw new UnauthorizedAccessException("Không xác định người dùng.");
-            var res = await _reservationRepo.GetById(request.ReservationId)
-                      ?? throw new InvalidOperationException("Không tìm thấy đặt lịch.");
+            var userId = _currentUser.UserId;
+            if (userId == null)
+            {
+                throw new UnauthorizedAccessException("Không xác định người dùng.");
+            }
+
+            var res = await _reservationRepo.GetById(request.ReservationId);
+            if(res == null)
+            {
+                throw new InvalidOperationException("Không tìm thấy đặt lịch.");
+            }
 
             if (res.UserId != userId)
+            {
                 throw new UnauthorizedAccessException("Bạn không thể hủy đặt lịch này.");
+            }
 
             using var tx = await _reservationRepo.BeginTransactionAsync();
 
             await _reservationRepo.Cancel(request.ReservationId);
-            await _reservationAllocationRepo.ReleaseByReservation(request.ReservationId, "Cancelled");
+            await _reservationAllocationRepo.ReleaseByReservation(request.ReservationId, ReservationStatus.Cancelled);
 
             await tx.CommitAsync();
         }
 
         public async Task<IEnumerable<ReservationDto>> GetMyReservations()
         {
-            var userId = _currentUser.UserId
-                ?? throw new UnauthorizedAccessException("Không xác định được người dùng.");
+            var userId = _currentUser.UserId;
+
+            if(userId == null)
+            {
+                throw new UnauthorizedAccessException("Không xác định người dùng.");
+            }
 
             var reservations = await _reservationRepo.GetByUserId(userId);
             return _mapper.Map<IEnumerable<ReservationDto>>(reservations);

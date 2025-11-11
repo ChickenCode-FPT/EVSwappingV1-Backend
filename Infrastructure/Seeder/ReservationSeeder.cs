@@ -12,44 +12,32 @@ namespace Infrastructure.Seeder
 
             if (context.Reservations.Any())
             {
-                Console.WriteLine("👉 ReservationSeeder: dữ liệu đã tồn tại, bỏ qua.");
                 return;
             }
 
-            Console.WriteLine("🚀 Bắt đầu seed Reservation, Allocation và Payment...");
-
             var rnd = new Random();
+            var users = await context.Users.Where(u => u.Email!.StartsWith("customer")).ToListAsync();
+            var vehicles = await context.Vehicles.ToListAsync();
+            var stations = await context.Stations.ToListAsync();
+            var fullBatteries = (await context.Batteries.Where(b => b.Status == BatteryStatus.Full).Take(20).ToListAsync()).ToList();
 
-            // lấy 3 user đầu tiên
-            var users = await context.Users
-                .OrderBy(u => u.CreatedAt)
-                .Take(3)
-                .ToListAsync();
-
-            if (!users.Any())
-                throw new InvalidOperationException("⚠️ Chưa có User nào — hãy chạy UserDriverVehicleSeeder trước.");
-
-            var vehicle = await context.Vehicles.FirstAsync();
-            var station = await context.Stations.FirstAsync();
-
-            // lấy ít nhất 3 pin full để seed allocation
-            var fullBatteries = await context.Batteries
-                .Where(b => b.Status == BatteryStatus.Full)
-                .Take(3)
-                .ToListAsync();
-
-            if (fullBatteries.Count < 3)
-                throw new InvalidOperationException("⚠️ Không đủ pin Full để seed ReservationAllocation.");
-
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 8; i++)
             {
-                var user = users[i];
-                var battery = fullBatteries[i];
+                if (!fullBatteries.Any())
+                {
+                    break;
+                }
+
+                var user = users[rnd.Next(users.Count)];
+                var vehicle = vehicles.First(v => v.UserId == user.Id);
+                var station = stations[rnd.Next(stations.Count)];
+
+                var battery = fullBatteries[rnd.Next(fullBatteries.Count)];
+                fullBatteries.Remove(battery);
 
                 var start = DateTime.UtcNow.AddHours(i + 1);
-                var end = start.AddMinutes(45);
+                var end = start.AddMinutes(30 + rnd.Next(15, 45));
 
-                // 1️⃣ Reservation
                 var reservation = new Reservation
                 {
                     UserId = user.Id,
@@ -64,20 +52,17 @@ namespace Infrastructure.Seeder
                 await context.Reservations.AddAsync(reservation);
                 await context.SaveChangesAsync();
 
-                // 2️⃣ ReservationAllocation
-                var allocation = new ReservationAllocation
+                // Allocation ko trùng pin
+                await context.ReservationAllocations.AddAsync(new ReservationAllocation
                 {
                     ReservationId = reservation.ReservationId,
                     BatteryId = battery.BatteryId,
                     AllocatedAt = DateTime.UtcNow,
                     HoldUntil = end,
                     Status = ReservationAllocationStatus.Active
-                };
-                await context.ReservationAllocations.AddAsync(allocation);
-                await context.SaveChangesAsync();
+                });
 
-                // 3️⃣ Payment (Deposit)
-                var payment = new Payment
+                await context.Payments.AddAsync(new Payment
                 {
                     UserId = user.Id,
                     ReservationId = reservation.ReservationId,
@@ -90,14 +75,43 @@ namespace Infrastructure.Seeder
                     Description = $"Deposit for reservation #{reservation.ReservationId}",
                     CreatedAt = DateTime.UtcNow,
                     PaidAt = DateTime.UtcNow
-                };
-                await context.Payments.AddAsync(payment);
+                });
                 await context.SaveChangesAsync();
 
-                Console.WriteLine($"✅ Seeded Reservation #{reservation.ReservationId} for {user.Email} with Battery #{battery.BatteryId}");
-            }
+                // Swap
+                var swap = new SwapTransaction
+                {
+                    ReservationId = reservation.ReservationId,
+                    StationId = station.StationId,
+                    CustomerUserId = user.Id,
+                    OutgoingBatteryId = battery.BatteryId,
+                    IncomingBatteryId = battery.BatteryId,
+                    SwapStartedAt = DateTime.UtcNow.AddHours(-rnd.Next(1, 4)),
+                    SwapFinishedAt = DateTime.UtcNow.AddHours(-rnd.Next(0, 2)),
+                    SwapStatus = SwapStatus.Completed,
+                    Price = rnd.Next(40000, 100000),
+                    Notes = $"Auto swap for {user.FullName}",
+                    CreatedAt = DateTime.UtcNow
+                };
+                await context.SwapTransactions.AddAsync(swap);
+                await context.SaveChangesAsync();
 
-            Console.WriteLine("🎉 ReservationSeeder hoàn tất!");
+                await context.Payments.AddAsync(new Payment
+                {
+                    UserId = user.Id,
+                    SwapTransactionId = swap.SwapTransactionId,
+                    Type = PaymentType.SwapFee,
+                    Amount = swap.Price,
+                    Currency = "VND",
+                    Method = "VNPAY",
+                    Status = PaymentStatus2.Paid,
+                    TransactionRef = $"PAY-SWAP-{swap.SwapTransactionId:D4}",
+                    Description = $"Swap fee for transaction #{swap.SwapTransactionId}",
+                    CreatedAt = DateTime.UtcNow,
+                    PaidAt = DateTime.UtcNow
+                });
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

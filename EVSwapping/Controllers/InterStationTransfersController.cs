@@ -1,6 +1,5 @@
 ﻿using Application.Common.Interfaces.Services;
 using Application.Dtos;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -49,7 +48,7 @@ namespace EVSwapping.Controllers
         public async Task<IActionResult> GetOutgoingTransfers()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if(userId == null)
+            if (userId == null)
             {
                 return Unauthorized();
             }

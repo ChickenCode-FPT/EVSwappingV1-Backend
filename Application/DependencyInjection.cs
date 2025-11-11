@@ -30,7 +30,7 @@ namespace Application
             services.AddScoped<ISupportTicketService, SupportTicketService>();
             services.AddScoped<ISwapTransactionService, SwapTransactionService>();
 
-            services.AddScoped<IBatteryHealthlogsService,BatteryHealthLogsService>();
+            services.AddScoped<IBatteryHealthlogsService, BatteryHealthLogsService>();
             services.AddScoped<IStationStaffService, StationStaffService>();
             services.AddScoped<IInterStationTransferService, InterStationTransferService>();
             return services;

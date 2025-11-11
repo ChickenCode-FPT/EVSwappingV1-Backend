@@ -1,4 +1,4 @@
-﻿using Application.Dtos;
+﻿using Application.Dtos.Driver;
 
 namespace Application.Common.Interfaces.Services
 {

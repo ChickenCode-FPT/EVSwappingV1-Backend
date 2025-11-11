@@ -1,11 +1,6 @@
 ﻿using Application.Common.Interfaces.Repositories;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.Repositories
 {
@@ -79,5 +74,17 @@ namespace Infrastructure.Persistance.Repositories
                 .OrderByDescending(t => t.RequestedAt)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<InterStationTransfer>> GetAllTransfersAsync()
+        {
+            return await _context.InterStationTransfers
+                .Include(t => t.RequestedByUser)
+                .Include(t => t.ApprovedByUser)
+                .Include(t => t.FromStation)
+                .Include(t => t.ToStation)
+                .OrderByDescending(t => t.RequestedAt)
+                .ToListAsync();
+        }
+
     }
 }

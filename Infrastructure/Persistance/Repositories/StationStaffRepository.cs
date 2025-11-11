@@ -1,11 +1,6 @@
 ﻿using Application.Common.Interfaces.Repositories;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.Repositories
 {
@@ -95,11 +90,11 @@ namespace Infrastructure.Persistance.Repositories
 
         public async Task<IEnumerable<StationStaff>> GetByStationNameAsync(string stationName)
         {
-           return await _context.StationStaffs
-                .Include(ss => ss.User)
-                .Include(ss => ss.Station)
-                .Where(ss => ss.Station.Name == stationName && ss.IsActive)
-                .ToListAsync();
+            return await _context.StationStaffs
+                 .Include(ss => ss.User)
+                 .Include(ss => ss.Station)
+                 .Where(ss => ss.Station.Name == stationName && ss.IsActive)
+                 .ToListAsync();
         }
 
         public async Task<StationStaff?> GetActiveStaffByUserIdAsync(string userId)

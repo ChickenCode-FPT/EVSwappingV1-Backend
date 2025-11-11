@@ -1,5 +1,5 @@
-﻿using Application.Dtos;
-using Application.Dtos.Osrm;
+﻿using Application.Dtos.Osrm;
+using Application.Dtos.Station;
 
 namespace Application.Common.Interfaces.Services
 {

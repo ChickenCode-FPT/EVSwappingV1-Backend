@@ -23,5 +23,6 @@ namespace Application.Common.Interfaces.Repositories
         Task Delete2(long id);
         Task<bool> ExistsByReservationId2(int reservationId);
         Task SaveChanges();
+        Task<IEnumerable<SwapTransaction>> GetCompletedWithoutPenalty(DateTime beforeTime);
     }
 }

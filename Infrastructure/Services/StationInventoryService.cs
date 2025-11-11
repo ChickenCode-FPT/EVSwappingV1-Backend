@@ -1,5 +1,6 @@
 ﻿using Application.Common.Interfaces;
-using Application.Dtos;
+using Application.Dtos.Battery;
+using Application.Dtos.Station;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 

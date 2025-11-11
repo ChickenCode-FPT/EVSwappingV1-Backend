@@ -5,6 +5,7 @@ namespace Application.Common.Interfaces.Repositories
     public interface IReservationAllocationRepository
     {
         Task Add(ReservationAllocation allocation);
+        Task Update(ReservationAllocation allocation);
         Task<ReservationAllocation?> GetActiveByBattery(int batteryId, DateTime fromUtc, DateTime toUtc);
         Task<IEnumerable<ReservationAllocation>> GetByReservationId(int reservationId);
         Task ReleaseByReservation(int reservationId, string reason);
