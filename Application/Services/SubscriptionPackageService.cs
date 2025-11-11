@@ -31,5 +31,17 @@ namespace Application.Services
 
             return _mapper.Map<SubscriptionPackageDto>(entity);
         }
+
+        public async void Update(int id, UpdatePackageRequest package)
+        {
+            var packages = await _packageRepository.GetById(id);
+            if (packages == null)
+            {
+                throw new Exception("Packge not found");
+            }
+            packages.Price = package.Price;
+            packages.Name = package.Name;
+            _packageRepository.Update(packages);
+        }
     }
 }

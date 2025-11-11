@@ -36,5 +36,20 @@ namespace EVSwapping.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        [HttpPut("{id}")]
+        public IActionResult Update(int id,[FromBody] UpdatePackageRequest request)
+        {
+            try
+            {
+                _packageService.Update(id, request);
+                return Ok(new { message = "Package updated successfully." });
+            }
+            catch (Exception ex) 
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+
+        }
     }
 }

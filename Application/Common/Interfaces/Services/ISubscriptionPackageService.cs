@@ -6,5 +6,6 @@ namespace Application.Common.Interfaces.Services
     {
         Task<List<SubscriptionPackageDto>> GetAll();
         Task<SubscriptionPackageDto> Create(CreatePackageRequest request);
+        void Update(int id, UpdatePackageRequest package);
     }
 }
