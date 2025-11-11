@@ -1,3 +1,4 @@
-dotnet ef migrations add AddSubscriptionPackageStatus --project . --startup-project ../EVSwapping
+dotnet ef migrations add AddReservationDepositFeeToBatteryModel --project . --startup-project ../EVSwapping
 
+dotnet ef database drop -p Infrastructure -s EVSwapping
 dotnet ef database update -p Infrastructure -s EVSwapping

@@ -89,7 +89,7 @@ namespace Infrastructure.Services
                 await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
             await _userManager.AddToRoleAsync(user, newRole);
-            
+
         }
 
 

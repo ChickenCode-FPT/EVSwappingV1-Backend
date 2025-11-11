@@ -56,10 +56,15 @@ namespace Application.Services
         public async Task<PaymentResponseDto?> UpdatePaymentStatus(PaymentStatusUpdateDto dto)
         {
             var payment = await _paymentRepo.GetByTransactionRef(dto.OrderCode);
-            if (payment == null) return null;
+            if (payment == null)
+            {
+                return null;
+            }
 
             if (payment.Status == PaymentStatus2.Paid)
+            {
                 return _mapper.Map<PaymentResponseDto>(payment);
+            }
 
             using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
@@ -90,7 +95,9 @@ namespace Application.Services
         public async Task UpdateLinkedEntitiesAfterPayment(Payment payment)
         {
             if (payment.Status != PaymentStatus2.Paid)
+            {
                 return;
+            }
 
             if (payment.ReservationId.HasValue)
             {
@@ -100,7 +107,6 @@ namespace Application.Services
                     res.Status = ReservationStatus.Confirmed;
                     res.UpdatedAt = DateTime.UtcNow;
                     await _reservationRepo.Update(res);
-                    _logger.LogInformation($"[Payment] Reservation #{res.ReservationId} marked as Confirmed after payment.");
                 }
             }
 
@@ -115,8 +121,8 @@ namespace Application.Services
 
         public async Task<PaymentResponseDto?> GetPaymentById(long id)
         {
-            var entity = await _paymentRepo.GetById(id);
-            return _mapper.Map<PaymentResponseDto>(entity);
+            var payment = await _paymentRepo.GetById(id);
+            return _mapper.Map<PaymentResponseDto>(payment);
         }
     }
 }

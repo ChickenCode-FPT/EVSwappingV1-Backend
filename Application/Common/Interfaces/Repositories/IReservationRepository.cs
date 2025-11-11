@@ -24,4 +24,4 @@ namespace Application.Common.Interfaces.Repositories
         Task<IEnumerable<Reservation>> GetByStatus(string status);
         Task<IEnumerable<Reservation>> GetPendingReservationsBetween(DateTime start, DateTime end);
     }
-} 
+}

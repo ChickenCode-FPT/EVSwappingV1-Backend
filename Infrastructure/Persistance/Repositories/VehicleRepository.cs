@@ -15,12 +15,12 @@ namespace Infrastructure.Persistance.Repositories
 
         public async Task<bool> IsValidVehicleByUser(string userId, int vehicleId)
         {
-            var user = await _context.Users
-                .Include(u => u.Vehicles)
-                .FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _context.Users.Include(u => u.Vehicles).FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
+            {
                 return false;
+            }
 
             return user.Vehicles.Any(v => v.VehicleId == vehicleId);
         }

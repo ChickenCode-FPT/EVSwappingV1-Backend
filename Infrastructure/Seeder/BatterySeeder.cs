@@ -15,10 +15,46 @@ namespace Infrastructure.Seeder
             {
                 var models = new List<BatteryModel>
                 {
-                    new BatteryModel { ModelCode = "BAT-2KWH",  Manufacturer = "EVTech",   CapacityKwh = 2.0m,  Chemistry = "Li-ion", CompatibleVehicleTypes = "Scooter, Bike", CreatedAt = DateTime.UtcNow },
-                    new BatteryModel { ModelCode = "BAT-5KWH",  Manufacturer = "EVTech",   CapacityKwh = 5.0m,  Chemistry = "Li-ion", CompatibleVehicleTypes = "Car, Van",        CreatedAt = DateTime.UtcNow },
-                    new BatteryModel { ModelCode = "BAT-7KWH",  Manufacturer = "EVPower",  CapacityKwh = 7.0m,  Chemistry = "Li-ion", CompatibleVehicleTypes = "SUV",              CreatedAt = DateTime.UtcNow },
-                    new BatteryModel { ModelCode = "BAT-10KWH", Manufacturer = "GreenVolt",CapacityKwh = 10.0m, Chemistry = "Li-ion", CompatibleVehicleTypes = "Truck, Bus",       CreatedAt = DateTime.UtcNow },
+                    new BatteryModel
+                    {
+                        ModelCode = "BAT-2KWH",
+                        Manufacturer = "EVTech",
+                        CapacityKwh = 2.0m,
+                        Chemistry = "Li-ion",
+                        CompatibleVehicleTypes = "Scooter, Bike",
+                        ReservationDepositFee = 30000m, 
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new BatteryModel
+                    {
+                        ModelCode = "BAT-5KWH",
+                        Manufacturer = "EVTech",
+                        CapacityKwh = 5.0m,
+                        Chemistry = "Li-ion",
+                        CompatibleVehicleTypes = "Car, Van",
+                        ReservationDepositFee = 50000m,
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new BatteryModel
+                    {
+                        ModelCode = "BAT-7KWH",
+                        Manufacturer = "EVPower",
+                        CapacityKwh = 7.0m,
+                        Chemistry = "Li-ion",
+                        CompatibleVehicleTypes = "SUV",
+                        ReservationDepositFee = 70000m,
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new BatteryModel
+                    {
+                        ModelCode = "BAT-10KWH",
+                        Manufacturer = "GreenVolt",
+                        CapacityKwh = 10.0m,
+                        Chemistry = "Li-ion",
+                        CompatibleVehicleTypes = "Truck, Bus",
+                        ReservationDepositFee = 100000m,
+                        CreatedAt = DateTime.UtcNow
+                    },
                 };
 
                 await context.BatteryModels.AddRangeAsync(models);
@@ -40,7 +76,6 @@ namespace Infrastructure.Seeder
                 var inventories = new List<StationInventory>();
 
                 int serialCounter = 1;
-
                 const int batteriesPerModel = 20;
 
                 string PickBatteryStatus()

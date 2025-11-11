@@ -5,12 +5,6 @@ using Quartz;
 
 namespace Infrastructure.Jobs
 {
-    /// <summary>
-    /// Job tự động:
-    ///  - Giữ (hold) pin cho các đặt lịch sắp tới.
-    ///  - Giải phóng pin cho các đặt lịch đã hết hạn.
-    ///  - Đánh dấu reservation hoàn tất nếu đã đổi pin (có swap record).
-    /// </summary>
     [DisallowConcurrentExecution]
     public class ExpireAndHoldBackgroundService : IJob
     {
@@ -20,9 +14,8 @@ namespace Infrastructure.Jobs
         private readonly ISwapTransactionRepository _swapRepo;
         private readonly ILogger<ExpireAndHoldBackgroundService> _logger;
 
-        // cấu hình thời gian có thể đưa vào appsettings.json sau
-        private const int HoldAheadMinutes = 10;   // Giữ pin trước 10 phút
-        private const int HoldDurationMinutes = 15; // Pin giữ tối đa 15 phút
+        private const int HoldAheadMinutes = 10;   
+        private const int HoldDurationMinutes = 15; 
 
         public ExpireAndHoldBackgroundService(
             IReservationRepository reservationRepo,
@@ -43,7 +36,6 @@ namespace Infrastructure.Jobs
             var now = DateTime.UtcNow;
             _logger.LogInformation("=== [ExpireAndHoldJob] Tick at {time} ===", now);
 
-            // 1️⃣ Giữ pin cho các đặt lịch sắp tới (trong vòng 10 phút)
             var upcomingReservations = await _reservationRepo.GetPendingReservationsBetween(now, now.AddMinutes(HoldAheadMinutes));
             foreach (var res in upcomingReservations)
             {
@@ -61,7 +53,6 @@ namespace Infrastructure.Jobs
                 }
             }
 
-            // 2️⃣ Hủy giữ pin đã hết hạn
             var expiredAllocations = await _allocationRepo.GetExpiredAllocations(now);
             foreach (var alloc in expiredAllocations)
             {
@@ -86,7 +77,6 @@ namespace Infrastructure.Jobs
                 }
             }
 
-            // 3️⃣ Đánh dấu reservation hoàn tất nếu đã có swap thực tế
             var pendingReservations = await _reservationRepo.GetPendingReservations();
             foreach (var res in pendingReservations)
             {
@@ -107,7 +97,6 @@ namespace Infrastructure.Jobs
                 }
             }
 
-            // ✅ Commit thay đổi
             await _allocationRepo.SaveChanges();
             await _reservationRepo.SaveChanges();
             _logger.LogInformation("=== [ExpireAndHoldJob] Cycle completed ===");

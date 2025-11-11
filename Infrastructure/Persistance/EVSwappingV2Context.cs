@@ -141,6 +141,11 @@ public partial class EVSwappingV2Context : IdentityDbContext<User>
             entity.Property(e => e.ModelCode)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            entity.Property(e => e.ReservationDepositFee)
+                .HasColumnType("decimal(10, 2)")
+                .HasDefaultValue(50000)
+                .IsRequired();
         });
 
         modelBuilder.Entity<Driver>(entity =>

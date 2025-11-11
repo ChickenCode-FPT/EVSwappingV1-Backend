@@ -101,12 +101,10 @@ namespace Infrastructure
             services.AddScoped<ISwapTransactionRepository, SwapTransactionRepository>();
             services.AddScoped<IReservationAllocationRepository, ReservationAllocationRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IPayOSClient, PayOSClient>();
             services.AddScoped<IPaymentGatewayClient, VnpayClient>();
-
             services.AddScoped<IBatteryHealthLogsRepository, BatteryHealthLogsRepository>();
             services.AddScoped<IStationStaffRepository, StationStaffRepository>();
-            services.AddScoped<IInterStationTransferRepository,InterStationTransferRepository>();
+            services.AddScoped<IInterStationTransferRepository, InterStationTransferRepository>();
             return services;
         }
     }

@@ -82,13 +82,13 @@ namespace Infrastructure.Persistance.Repositories
         public async Task<Payment?> GetByTransactionRef(string transactionRef)
         {
             if (string.IsNullOrWhiteSpace(transactionRef))
+            {
                 return null;
+            }
 
             transactionRef = transactionRef.Trim().ToUpper();
 
-            return await _context.Payments
-                .Include(p => p.User)
-                .FirstOrDefaultAsync(p => p.TransactionRef.ToUpper() == transactionRef);
+            return await _context.Payments.Include(p => p.User).FirstOrDefaultAsync(p => p.TransactionRef.ToUpper() == transactionRef);
         }
 
         public async Task<IEnumerable<Payment>> GetByUser(string userId)

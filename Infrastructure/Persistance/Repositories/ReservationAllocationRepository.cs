@@ -1,4 +1,5 @@
 ﻿using Application.Common.Interfaces.Repositories;
+using Domain.Enums;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,18 +45,33 @@ namespace Infrastructure.Persistance.Repositories
 
         public async Task ReleaseByReservation(int reservationId, string reason)
         {
-            var allocations = await _context.ReservationAllocations
-                .Where(a => a.ReservationId == reservationId && a.Status == "Active")
-                .ToListAsync();
+            var activeAllo = await _context.ReservationAllocations.Where(a => a.ReservationId == reservationId && a.Status == ReservationAllocationStatus.Active).ToListAsync();
 
-            foreach (var alloc in allocations)
+            if (!activeAllo.Any())
             {
-                alloc.Status = reason switch
-                {
-                    "Cancelled" => "Released",
-                    "Expired" => "Expired",
-                    _ => "Released"
-                };
+                return;
+            }
+
+            string newStatus;
+
+            switch (reason)
+            {
+                case ReservationStatus.Cancelled:
+                    newStatus = ReservationAllocationStatus.Released;
+                    break;
+
+                case ReservationStatus.Expired:
+                    newStatus = ReservationAllocationStatus.Expired;
+                    break;
+
+                default:
+                    newStatus = ReservationAllocationStatus.Released;
+                    break;
+            }
+
+            foreach (var allo in activeAllo)
+            {
+                allo.Status = newStatus;
             }
 
             await _context.SaveChangesAsync();
@@ -102,7 +118,8 @@ namespace Infrastructure.Persistance.Repositories
                 a.Reservation.ReservedFrom < toUtc);
         }
 
-        public async Task SaveChanges() {
+        public async Task SaveChanges()
+        {
             await _context.SaveChangesAsync();
         }
     }

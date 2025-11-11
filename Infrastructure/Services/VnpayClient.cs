@@ -1,7 +1,6 @@
 ﻿using Application.Common.Interfaces.Services;
 using Application.Dtos.Payment;
 using Domain.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -76,77 +75,6 @@ namespace Infrastructure.Services
                 CheckoutUrl = paymentUrl,
                 GatewayOrderCode = orderRef,
                 Success = true
-            };
-        }
-
-        public bool ValidateCallbackSignature(IQueryCollection query)
-        {
-            var sorted = query
-                .Where(k => k.Key.StartsWith("vnp_") &&
-                            k.Key != "vnp_SecureHash" &&
-                            k.Key != "vnp_SecureHashType")
-                .OrderBy(k => k.Key)
-                .ToDictionary(k => k.Key, k => k.Value.ToString());
-
-            var rawData = string.Join("&", sorted.Select(kvp => $"{kvp.Key}={kvp.Value}"));
-            var expectedHash = HmacSHA512(_vnpHashSecret, rawData);
-            var receivedHash = query["vnp_SecureHash"].ToString();
-
-            var valid = expectedHash.Equals(receivedHash, StringComparison.OrdinalIgnoreCase);
-
-            return valid;
-        }
-
-        public PaymentWebhookDto ParseCallback(IQueryCollection query)
-        {
-            var status = query["vnp_ResponseCode"] == "00" ? "PAID" : "FAILED";
-            return new PaymentWebhookDto
-            {
-                OrderCode = query["vnp_TxnRef"],
-                Status = status,
-                Amount = decimal.Parse(query["vnp_Amount"]) / 100,
-                RawData = query.ToString(),
-                Signature = query["vnp_SecureHash"]
-            };
-        }
-
-        public async Task<PaymentStatusResponseDto?> GetPaymentStatusAsync(string orderCode)
-        {
-            return null;
-        }
-
-        public async Task<RefundResultDto> CreateRefundAsync(Payment originalPayment, RefundRequestDto request)
-        {
-            var refundRef = $"RF{DateTime.Now:yyyyMMddHHmmss}";
-            var vnp_Params = new SortedList<string, string>
-            {
-                ["vnp_RequestId"] = refundRef,
-                ["vnp_Version"] = "2.1.0",
-                ["vnp_Command"] = "refund",
-                ["vnp_TmnCode"] = _vnpTmnCode,
-                ["vnp_TransactionType"] = "02",
-                ["vnp_TxnRef"] = originalPayment.TransactionRef ?? originalPayment.PaymentId.ToString(),
-                ["vnp_Amount"] = ((int)(request.RefundAmount * 100)).ToString(),
-                ["vnp_OrderInfo"] = request.Reason,
-                ["vnp_CreateBy"] = request.StaffUserId ?? "system",
-                ["vnp_CreateDate"] = DateTime.Now.ToString("yyyyMMddHHmmss")
-            };
-
-            var raw = string.Join("&", vnp_Params.Select(kvp => $"{kvp.Key}={kvp.Value}"));
-            var secureHash = HmacSHA512(_vnpHashSecret, raw);
-            vnp_Params["vnp_SecureHash"] = secureHash;
-
-            var client = new HttpClient();
-            var content = new FormUrlEncodedContent(vnp_Params);
-            var response = await client.PostAsync(_vnpApiUrl, content);
-            var body = await response.Content.ReadAsStringAsync();
-
-            var ok = response.IsSuccessStatusCode && body.Contains("00");
-            return new RefundResultDto
-            {
-                Success = ok,
-                Message = ok ? "Refund success (sandbox)" : "Refund failed",
-                GatewayReference = refundRef
             };
         }
 
