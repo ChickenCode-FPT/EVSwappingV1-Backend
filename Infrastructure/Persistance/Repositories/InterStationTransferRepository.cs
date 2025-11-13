@@ -74,5 +74,17 @@ namespace Infrastructure.Persistance.Repositories
                 .OrderByDescending(t => t.RequestedAt)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<InterStationTransfer>> GetAllTransfersAsync()
+        {
+            return await _context.InterStationTransfers
+                .Include(t => t.RequestedByUser)
+                .Include(t => t.ApprovedByUser)
+                .Include(t => t.FromStation)
+                .Include(t => t.ToStation)
+                .OrderByDescending(t => t.RequestedAt)
+                .ToListAsync();
+        }
+
     }
 }

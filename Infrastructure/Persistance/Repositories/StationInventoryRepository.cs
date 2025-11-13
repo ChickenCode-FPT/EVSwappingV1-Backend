@@ -59,8 +59,7 @@ namespace Infrastructure.Persistance.Repositories
         public async Task<List<int>> GetFullBatteryIdsByModel(int stationId, int batteryModelId)
         {
             return await _context.StationInventories
-                .Where(inv =>
-                    inv.StationId == stationId &&
+                .Where(inv => inv.StationId == stationId &&
                     inv.Status == StationInventoryStatus.Full &&
                     inv.Battery.Status == BatteryStatus.Full &&
                     inv.Battery.BatteryModelId == batteryModelId)

@@ -33,7 +33,7 @@ namespace Application.Services
             }
 
             var eDriver = await _driverRepository.GetByUserId(userId);
-
+                                                                                    
             if (eDriver != null)
             {
                 throw new InvalidOperationException("Bạn đã đk làm tài xế trc đó.");
