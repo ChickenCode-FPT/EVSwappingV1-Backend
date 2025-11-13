@@ -18,7 +18,7 @@ namespace EVSwapping.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
+        [HttpGet("/api/stationInventories")]
         public async Task<IActionResult> GetInventories()
         {
             var result = await _mediator.Send(new GetAllStationInventoriesQuery());

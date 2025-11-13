@@ -22,7 +22,7 @@ namespace Infrastructure.Persistance.Repositories
             return await _context.StationInventories
                 .Include(si => si.Battery)
                     .ThenInclude(b => b.BatteryModel)
-                .FirstOrDefaultAsync(si => si.StationId == stationId, ct);
+                .FirstOrDefaultAsync(si => si.StationInventoryId == stationId, ct);
         }
 
         public async Task<IEnumerable<StationInventory>> GetInventorys(CancellationToken ct)

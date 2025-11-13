@@ -33,6 +33,12 @@ namespace Application.Mappings
             CreateMap<UpdateBatteryCommand, Battery>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
+            //station inventory
+            CreateMap<StationInventory, StationInventoryDto>()
+                .ForMember(dest => dest.Batteries, opt => opt.MapFrom(src => src.Battery));
+
+            //
+
 
             //swap transaction
             //CreateMap<UpdateSwapTransactionCommand, SwapTransaction>()
