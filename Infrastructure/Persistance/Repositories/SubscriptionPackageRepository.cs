@@ -80,5 +80,56 @@ namespace Infrastructure.Persistance.Repositories
         {
             return await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
         }
+
+        public async Task<IEnumerable<SubscriptionPackage>> GetActivePackages()
+        {
+            return await _context.SubscriptionPackages
+                .Where(p => p.Status == "Active")
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task InactivePackage(int packageId)
+        {
+            var pkg = await _context.SubscriptionPackages.FindAsync(packageId);
+            if (pkg == null)
+                throw new KeyNotFoundException($"Package with id={packageId} not found.");
+
+            if (pkg.Status != "Active")
+                throw new InvalidOperationException("Only active packages can be set to inactive.");
+
+            pkg.Status = "Inactive";
+            _context.SubscriptionPackages.Update(pkg);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task ReactivatePackage(int packageId)
+        {
+            var pkg = await _context.SubscriptionPackages.FindAsync(packageId);
+            if (pkg == null)
+                throw new KeyNotFoundException($"Package with id={packageId} not found.");
+
+            if (pkg.Status != "Inactive")
+                throw new InvalidOperationException("Only inactive packages can be reactivated.");
+
+            pkg.Status = "Active";
+            _context.SubscriptionPackages.Update(pkg);
+            await _context.SaveChangesAsync();
+        }
+        public async Task PublishPackage(int packageId)
+        {
+            var pkg = await _context.SubscriptionPackages.FindAsync(packageId);
+            if (pkg == null)
+                throw new KeyNotFoundException($"Package with id={packageId} not found.");
+
+            if (pkg.Status != "Draft")
+                throw new InvalidOperationException("Only draft packages can be published.");
+
+            pkg.Status = "Active";
+            _context.SubscriptionPackages.Update(pkg);
+            await _context.SaveChangesAsync();
+        }
+
+
     }
 }
