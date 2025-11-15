@@ -20,5 +20,6 @@ namespace Application.Interfaces.Repositories
         Task<IEnumerable<Payment>> GetPendingPayments();
         Task<IEnumerable<Payment>> GetRefundablePayments();
         Task<IEnumerable<Payment>> GetByDateRange(DateTime start, DateTime end);
+        Task<IEnumerable<Payment>> GetUserPayments(string userId);
     }
 }

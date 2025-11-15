@@ -10,5 +10,6 @@ namespace Application.Common.Interfaces
         Task UpdateLinkedEntitiesAfterPayment(Payment payment);
         Task<IEnumerable<PaymentResponseDto>> GetUserPayments(string userId);
         Task<PaymentResponseDto?> GetPaymentById(long id);
+        Task<IEnumerable<PaymentResponseDto>> GetMyPayments();
     }
 }

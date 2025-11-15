@@ -79,6 +79,11 @@ namespace Infrastructure.Persistance.Repositories
                 .FirstOrDefaultAsync(p => p.PaymentId == id);
         }
 
+        public async Task<IEnumerable<Payment>> GetUserPayments(string userId)
+        {
+            return await _context.Payments.Where(p => p.UserId == userId).ToListAsync();
+        }
+
         public async Task<Payment?> GetByTransactionRef(string transactionRef)
         {
             if (string.IsNullOrWhiteSpace(transactionRef))

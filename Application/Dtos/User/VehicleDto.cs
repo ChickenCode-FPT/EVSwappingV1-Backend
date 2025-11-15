@@ -1,4 +1,6 @@
-﻿namespace Application.Dtos.User
+﻿using Application.Dtos.Battery;
+
+namespace Application.Dtos.User
 {
     public class VehicleDto
     {
@@ -9,5 +11,6 @@
         public string Model { get; set; } = string.Empty;
         public int? Year { get; set; }
         public int? BatteryModelPreferenceId { get; set; }
+        public BatteryModelDto? BatteryModel { get; set; }
     }
 }

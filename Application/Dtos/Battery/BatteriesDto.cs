@@ -22,5 +22,7 @@
         public decimal CapacityKwh { get; set; }
         public string Chemistry { get; set; }
         public string CompatibleVehicleTypes { get; set; }
+        public decimal ReservationDepositFee { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

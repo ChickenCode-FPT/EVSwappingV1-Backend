@@ -161,7 +161,7 @@ namespace Infrastructure.Persistance.Repositories
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()
-        {
+        {               
             return await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
         }
 
@@ -185,6 +185,16 @@ namespace Infrastructure.Persistance.Repositories
                 .Include(r => r.Station)
                 .Include(r => r.User)
                 .ToListAsync();
+        }
+
+        public async Task<bool> HasOverlappingReservation(string userId, DateTime fromUtc, DateTime toUtc)
+        {
+            return await _context.Reservations
+                .AnyAsync(r =>
+                    r.UserId == userId &&
+                    r.Status == ReservationStatus.Pending &&
+                    r.ReservedFrom < toUtc &&
+                    r.ReservedTo > fromUtc);
         }
     }
 }
