@@ -34,7 +34,7 @@ namespace Infrastructure.Persistance.Repositories
 
         public async Task<IEnumerable<Vehicle>> GetByUserId(string userId)
         {
-            return await _context.Vehicles.Where(v => v.UserId == userId).ToListAsync();
+            return await _context.Vehicles.Include(v => v.BatteryModelPreference).Where(v => v.UserId == userId).ToListAsync();
         }
 
         public async Task Add(Vehicle vehicle)

@@ -1,6 +1,7 @@
 ﻿using Application.Common.Interfaces;
 using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
+using Application.Common.Interfaces.Services.Application.Common.Interfaces.Services;
 using Application.Dtos.Payment;
 using Application.Interfaces.Repositories;
 using AutoMapper;
@@ -17,6 +18,7 @@ namespace Application.Services
         private readonly IReservationRepository _reservationRepo;
         private readonly IPaymentGatewayClient _gateway;
         private readonly IMapper _mapper;
+        private readonly ICurrentUserService _currentUser;
         private readonly ILogger<PaymentService> _logger;
 
         public PaymentService(
@@ -24,12 +26,14 @@ namespace Application.Services
             IReservationRepository reservationRepo,
             IPaymentGatewayClient gateway,
             IMapper mapper,
+            ICurrentUserService currentUser,
             ILogger<PaymentService> logger)
         {
             _paymentRepo = paymentRepo;
             _reservationRepo = reservationRepo;
             _gateway = gateway;
             _mapper = mapper;
+            _currentUser = currentUser;
             _logger = logger;
         }
 
@@ -123,6 +127,19 @@ namespace Application.Services
         {
             var payment = await _paymentRepo.GetById(id);
             return _mapper.Map<PaymentResponseDto>(payment);
+        }
+
+        public async Task<IEnumerable<PaymentResponseDto>> GetMyPayments()
+        {
+            var userId = _currentUser.UserId;
+            if (userId == null)
+            {
+                throw new UnauthorizedAccessException("ko xac dinh user.");
+            }
+
+            var payments = await _paymentRepo.GetUserPayments(userId);
+
+            return _mapper.Map<IEnumerable<PaymentResponseDto>>(payments);
         }
     }
 }

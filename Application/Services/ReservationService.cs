@@ -58,7 +58,7 @@ namespace Application.Services
             }
 
             var user = await _userRepo.GetByIdWithDetailsAsync(userId);
-            if(user == null)
+            if (user == null)
             {
                 throw new InvalidOperationException("Không tìm thấy thông tin người dùng.");
             }
@@ -188,6 +188,79 @@ namespace Application.Services
 
             return dto;
         }
+
+        //public async Task<ReservationDto> CreateReservation(CreateReservationRequest request)
+        //{
+        //    var userId = _currentUser.UserId;
+        //    if(userId == null)
+        //    {
+        //        throw new UnauthorizedAccessException("Ko xác định user");
+        //    }
+
+        //    var user = await _userRepo.GetByIdWithDetailsAsync(userId);
+        //    if(user == null)
+        //    {
+        //        throw new UnauthorizedAccessException("Ko xác định user");
+        //    }
+
+        //    if(user.Driver == null)
+        //    {
+        //        throw new InvalidOperationException("Ban can đang ky Driver trươc");
+        //    }
+
+        //    if (!request.VehicleId.HasValue)
+        //    {
+        //        throw new InvalidOperationException("Ban chua chon phuong tien hop le");
+        //    }
+
+        //    if(!await _vehicleRepo.IsValidVehicleByUser(userId, request.VehicleId.Value))
+        //    {
+        //        throw new InvalidOperationException("Vehicale ko hop le");
+        //    }
+
+        //    var vehicle = await _vehicleRepo.GetById(request.VehicleId.Value);
+        //    if (vehicle.BatteryModelPreference == null) 
+        //    {
+        //        throw new InvalidOperationException("Ban chua dk modle phu hop cho phuong tien cua ban");
+        //    }
+
+        //    var batteryModel = await _batteryModelRepo.GetById(vehicle.BatteryModelPreferenceId.Value);
+        //    if(batteryModel == null)
+        //    {
+        //        throw new InvalidOperationException("Ko co model hop le");
+        //    }
+
+        //    var fromUtc = request.ReservedFrom.ToUniversalTime();
+        //    var toUtc = request.ReservedTo.ToUniversalTime();
+
+        //    if (fromUtc >= toUtc)
+        //    {
+        //        throw new InvalidOperationException("Thoi gian dat ko hop le");
+        //    }
+
+        //    if((toUtc - fromUtc).TotalMinutes > 90)
+        //    {
+        //        throw new InvalidOperationException("Thoi luong dat ko qua 90p");
+        //    }
+
+        //    if(DateTime.UtcNow.AddMinutes(10) > fromUtc)
+        //    {
+        //        throw new InvalidOperationException("Phai dat truoc it nhat 10p");
+        //    }
+
+        //    if(!await _reservationRepo.HasOverlappingReservation(userId, fromUtc, toUtc))
+        //    {
+        //        throw new InvalidOperationException("Ban da co lich trung truoc do");
+        //    }
+
+        //    Reservation reservation;
+        //    ReservationAllocation allocation;
+
+        //    using (var transaction = await _reservationRepo.BeginTransactionAsync())
+        //    {
+
+        //    }
+        //}
 
         public async Task CancelReservation(CancelReservationRequest request)
         {

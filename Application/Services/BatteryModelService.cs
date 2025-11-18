@@ -1,5 +1,7 @@
 ﻿using Application.Common.Interfaces;
 using Application.Common.IRespositories;
+using Application.Dtos.Battery;
+using AutoMapper;
 using Domain.Models;
 
 namespace Application.Services
@@ -7,17 +9,20 @@ namespace Application.Services
     public class BatteryModelService : IBatteryModelService
     {
         private readonly IBatteryModelRepository _batteryModelRepository;
+        private readonly IMapper _mapper;
 
-        public BatteryModelService(IBatteryModelRepository batteryModelRepository)
+        public BatteryModelService(IBatteryModelRepository batteryModelRepository, IMapper mapper)
         {
             _batteryModelRepository = batteryModelRepository;
+            _mapper = mapper;
         }
 
-        public async Task<List<BatteryModel>> GetAll()
+        public async Task<IEnumerable<BatteryModelDto>> GetAll()
         {
             try
             {
-                return await _batteryModelRepository.GetAll();
+                var batteryModels = await _batteryModelRepository.GetAll();
+                return _mapper.Map<IEnumerable<BatteryModelDto>>(batteryModels);
             }
             catch (Exception ex)
             {

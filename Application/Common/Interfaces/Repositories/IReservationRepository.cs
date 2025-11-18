@@ -23,5 +23,6 @@ namespace Application.Common.Interfaces.Repositories
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task<IEnumerable<Reservation>> GetByStatus(string status);
         Task<IEnumerable<Reservation>> GetPendingReservationsBetween(DateTime start, DateTime end);
+        Task<bool> HasOverlappingReservation(string userId, DateTime fromUtc, DateTime toUtc);
     }
 }
