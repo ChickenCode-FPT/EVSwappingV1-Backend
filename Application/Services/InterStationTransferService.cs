@@ -48,14 +48,19 @@ namespace Application.Services
             return true;
         }
 
-        public async Task<bool> CompleteTransferAsync(long transferId)
+        public async Task<bool> CompleteTransferAsync(long transferId, CompleteInterStationTransfer completeInterStationTransfer)
         {
             var transfer = await _repository.GetByIdAsync(transferId);
+
             if (transfer == null || transfer.Status != "Approved") return false;
 
-            transfer.Status = "Completed";
-            transfer.CompletedAt = DateTime.UtcNow;
-            await _repository.UpdateAsync(transfer);
+            try
+            {
+                await _repository.CompletedTransferAsync(transfer, completeInterStationTransfer);
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
             return true;
         }
 
@@ -113,6 +118,40 @@ namespace Application.Services
             }).ToList();
         }
 
+        public async Task<List<InterStationTransferAdminDto>> GetAllTransfersAsync()
+        {
+            var entities = await _repository.GetAllTransfersAsync();
+            var dtos = entities.Select(t => new InterStationTransferAdminDto
+            {
+                TransferId = t.TransferId,
+                FromStationId = t.FromStationId,
+                FromStationName = t.FromStation?.Name,
+                ToStationId = t.ToStationId,
+                ToStationName = t.ToStation?.Name,
+                BatteryId = t.BatteryId,
+                BatterySerial = t.Battery?.SerialNumber,
+                RequestedByUserId = t.RequestedByUserId, // Map ID
+                RequestedBy = t.RequestedByUser?.FullName, // Map Name
+                ApprovedByUserId = t.ApprovedByUserId, // Map ID
+                ApprovedBy = t.ApprovedByUser?.FullName, // Map Name
+                Status = t.Status,
+                RequestedAt = t.RequestedAt,
+                CompletedAt = t.CompletedAt
+            }).ToList();
+
+            return dtos;
+        }
+
+        public async Task<List<String>> GetAvaiableSlot(int stationId)
+        {
+            var slots = await _repository.GetEmptySlotsAsync(stationId);
+            if (slots == null || slots.Count == 0)
+            {
+                return new List<string>();
+            }
+            return slots;
+        }
 
     }
 }
+

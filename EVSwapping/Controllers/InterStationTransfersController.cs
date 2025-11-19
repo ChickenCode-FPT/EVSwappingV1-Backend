@@ -31,9 +31,9 @@ namespace EVSwapping.Controllers
         }
 
         [HttpPost("{transferId}/complete")]
-        public async Task<IActionResult> CompleteTransfer(long transferId)
+        public async Task<IActionResult> CompleteTransfer(long transferId, [FromBody] CompleteInterStationTransfer completeInterStationTransfer)
         {
-            var success = await _service.CompleteTransferAsync(transferId);
+            var success = await _service.CompleteTransferAsync(transferId, completeInterStationTransfer);
             return success ? Ok("Transfer completed.") : BadRequest("Invalid transfer or status.");
         }
 
@@ -62,6 +62,29 @@ namespace EVSwapping.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var result = await _service.GetIncomingTransfersAsync(userId);
             return Ok(result);
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(List<InterStationTransferAdminDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetAllTransfers()
+        {
+            try
+            {
+                var result = await _service.GetAllTransfersAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Đã xảy ra lỗi nội bộ khi lấy dữ liệu.");
+            }
+        }
+
+        [HttpGet("station/{stationId}/available-slots")]
+        public async Task<IActionResult> GetAvailableSlots(int stationId)
+        {
+            var slots = await _service.GetAvaiableSlot(stationId);
+            return Ok(slots);
         }
     }
 }
