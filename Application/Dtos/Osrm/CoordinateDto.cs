@@ -2,7 +2,10 @@
 {
     public class CoordinateDto
     {
+        // kinh độ (Đông - Tây)
         public decimal Longitude { get; set; }
+
+        // vĩ độ (Bắc - Nam)
         public decimal Latitude { get; set; }
 
         public CoordinateDto() { }

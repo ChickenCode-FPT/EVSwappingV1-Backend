@@ -45,7 +45,10 @@ namespace Application.Services
         public async Task<StationDto?> GetById(int stationId)
         {
             var station = await _stationRepo.GetById(stationId);
-            if (station == null) return null;
+            if (station == null)
+            {
+                return null;
+            }
 
             var dto = _mapper.Map<StationDto>(station);
             dto.AvailableBatteries = await _inventoryRepo.CountAvailableBatteries(stationId);
@@ -56,7 +59,10 @@ namespace Application.Services
         public async Task<StationDto?> GetNearestStation(decimal userLng, decimal userLat, string profile = "car")
         {
             var stations = (await _stationRepo.GetAll()).ToList();
-            if (!stations.Any()) return null;
+            if (!stations.Any())
+            {
+                return null;
+            }
 
             var valid = stations
                 .Where(s => s.Longitude.HasValue && s.Latitude.HasValue && s.Longitude != 0 && s.Latitude != 0)
@@ -68,13 +74,16 @@ namespace Application.Services
             }
 
             var start = new CoordinateDto(userLng, userLat);
+            // ds td các trạm hop le
             var coords = valid.Select(s => new CoordinateDto(s.Longitude!.Value, s.Latitude!.Value));
 
+            // tra ve ds khoảng cách, tg từ user -> các trạm
             var table = await _osrmService.GetTable(start, coords, profile);
 
             var durations = table.durations?.FirstOrDefault() ?? table.distances?.FirstOrDefault();
             if (durations == null) return null;
 
+            // tìm gtr nhỏ nhat trong mảng -> lấy index -> lấy trạm
             var bestIdx = Array.IndexOf(durations, durations.Min());
             var nearest = valid[bestIdx];
 
@@ -89,7 +98,10 @@ namespace Application.Services
         public async Task<OsrmRouteResponse> GetRouteToStation(decimal userLng, decimal userLat, int stationId, string profile = "car")
         {
             var station = await _stationRepo.GetById(stationId);
-            if (station == null) return null!;
+            if (station == null)
+            {
+                return null!;
+            }
 
             var start = new CoordinateDto(userLng, userLat);
             var end = new CoordinateDto(station.Longitude ?? 0, station.Latitude ?? 0);
@@ -125,6 +137,7 @@ namespace Application.Services
                 throw;
             }
 
+            // trả về ma trận distace, duration
             var distances = table.distances?.FirstOrDefault();
             var durations = table.durations?.FirstOrDefault();
 
@@ -135,6 +148,7 @@ namespace Application.Services
                 var dto = _mapper.Map<StationDto>(valid[i]);
                 dto.AvailableBatteries = await _inventoryRepo.CountAvailableBatteries(dto.StationId);
 
+                // ghép vào StationDto
                 if (distances != null && i < distances.Length)
                     dto.DistanceKm = Math.Round(distances[i] / 1000.0, 2);
 
