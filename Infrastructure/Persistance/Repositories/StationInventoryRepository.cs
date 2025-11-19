@@ -137,42 +137,40 @@ namespace Infrastructure.Persistance.Repositories
 
         public async Task MarkHeld(int batteryId, int stationId, int? reservationId = null)
         {
-            var inv = await _context.StationInventories
-                .Include(si => si.Battery)
-                .FirstOrDefaultAsync(si => si.StationId == stationId && si.BatteryId == batteryId);
+            var inv = await _context.StationInventories.Include(si => si.Battery).FirstOrDefaultAsync(si => si.StationId == stationId && si.BatteryId == batteryId);
 
             if (inv == null)
-                throw new InvalidOperationException($"Không tìm thấy pin #{batteryId} trong kho trạm #{stationId}.");
+            {
+                throw new InvalidOperationException("Không tìm thấy pin.");
+            }
 
             if (inv.Status != StationInventoryStatus.Full)
-                throw new InvalidOperationException($"Pin #{batteryId} hiện không ở trạng thái sẵn sàng để giữ (trạng thái: {inv.Status}).");
+            {
+                throw new InvalidOperationException("Pin hiện không ở trạng thái sẵn sàng để giữ.");
+            }
 
             inv.Status = StationInventoryStatus.Held;
             inv.ReservationId = reservationId;
 
             if (inv.Battery != null)
+            {
                 inv.Battery.Status = BatteryStatus.Held;
+            }
 
             await _context.SaveChangesAsync();
-
-            _logger.LogInformation($"[MarkHeld] Battery #{batteryId} tại trạm #{stationId} đã được giữ cho Reservation #{reservationId}.");
         }
 
         public async Task MarkFull(int batteryId, int stationId)
         {
-            var inv = await _context.StationInventories
-                .Include(si => si.Battery)
-                .FirstOrDefaultAsync(si => si.StationId == stationId && si.BatteryId == batteryId);
+            var inv = await _context.StationInventories.Include(si => si.Battery).FirstOrDefaultAsync(si => si.StationId == stationId && si.BatteryId == batteryId);
 
             if (inv == null)
             {
-                _logger.LogWarning($"[MarkFull] Không tìm thấy pin #{batteryId} trong trạm #{stationId}.");
                 return;
             }
 
             if (inv.Status != StationInventoryStatus.Held && inv.Status != StationInventoryStatus.Empty)
             {
-                _logger.LogWarning($"[MarkFull] Bỏ qua Battery #{batteryId} (trạng thái hiện tại: {inv.Status}).");
                 return;
             }
 
@@ -180,11 +178,11 @@ namespace Infrastructure.Persistance.Repositories
             inv.ReservationId = null;
 
             if (inv.Battery != null)
+            {
                 inv.Battery.Status = BatteryStatus.Full;
+            }
 
             await _context.SaveChangesAsync();
-
-            _logger.LogInformation($"[MarkFull] Battery #{batteryId} tại trạm #{stationId} đã được trả về trạng thái Full.");
         }
     }
 }

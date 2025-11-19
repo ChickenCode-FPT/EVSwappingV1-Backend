@@ -69,7 +69,9 @@ namespace Infrastructure.Jobs
 
                     await _allocationRepo.Update(alloc);
                     if (alloc.Reservation != null)
+                    {
                         await _reservationRepo.Update(alloc.Reservation);
+                    }
                 }
                 catch (Exception ex)
                 {
