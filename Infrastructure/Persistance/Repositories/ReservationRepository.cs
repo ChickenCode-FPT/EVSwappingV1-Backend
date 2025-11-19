@@ -31,7 +31,9 @@ namespace Infrastructure.Persistance.Repositories
         {
             var reservation = await _context.Reservations.FindAsync(reservationId);
             if (reservation == null)
-                throw new KeyNotFoundException($"Reservation with id={reservationId} not found.");
+            {
+                throw new KeyNotFoundException($"Reservation not found.");
+            }
 
             _context.Reservations.Remove(reservation);
             await _context.SaveChangesAsync();
@@ -87,7 +89,9 @@ namespace Infrastructure.Persistance.Repositories
         {
             var reservation = await _context.Reservations.FindAsync(reservationId);
             if (reservation == null)
-                throw new KeyNotFoundException($"Reservation with id={reservationId} not found.");
+            {
+                throw new KeyNotFoundException($"Reservation not found.");
+            }
 
             reservation.Status = ReservationStatus.Cancelled;
             reservation.UpdatedAt = DateTime.UtcNow;
@@ -100,11 +104,14 @@ namespace Infrastructure.Persistance.Repositories
         {
             var reservation = await _context.Reservations.FindAsync(reservationId);
             if (reservation == null)
-                throw new KeyNotFoundException($"Reservation with id={reservationId} not found.");
+            {
+                throw new KeyNotFoundException($"Reservation with not found.");
+            }
 
             reservation.Status = newStatus;
             reservation.UpdatedAt = DateTime.UtcNow;
             _context.Reservations.Update(reservation);
+
             await _context.SaveChangesAsync();
         }
 
@@ -177,9 +184,7 @@ namespace Infrastructure.Persistance.Repositories
         public async Task<IEnumerable<Reservation>> GetPendingReservationsBetween(DateTime start, DateTime end)
         {
             return await _context.Reservations
-                .Where(r => r.Status == ReservationStatus.Pending
-                            && r.ReservedFrom >= start
-                            && r.ReservedFrom <= end)
+                .Where(r => r.Status == ReservationStatus.Pending && r.ReservedFrom >= start && r.ReservedFrom <= end)
                 .Include(r => r.ReservationAllocations)
                     .ThenInclude(a => a.Battery)
                 .Include(r => r.Station)

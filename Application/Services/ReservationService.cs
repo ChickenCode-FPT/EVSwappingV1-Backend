@@ -63,7 +63,6 @@ namespace Application.Services
                 throw new InvalidOperationException("Không tìm thấy thông tin người dùng.");
             }
 
-
             if (user.Driver == null)
             {
                 throw new InvalidOperationException("Bạn cần đăng ký tài xế trước khi đặt lịch.");
@@ -80,31 +79,36 @@ namespace Application.Services
             }
 
             var vehicle = await _vehicleRepo.GetById(request.VehicleId.Value);
+            if (vehicle == null)
+            {
+                throw new InvalidOperationException("Không tìm thấy phương tiện.");
+            }
+
             if (vehicle.BatteryModelPreferenceId == null)
             {
                 throw new InvalidOperationException("Xe chưa gán model pin phù hợp.");
             }
 
-            var fromUtc = request.ReservedFrom.ToUniversalTime();
-            var toUtc = request.ReservedTo.ToUniversalTime();
+            var fromLocal = DateTime.SpecifyKind(request.ReservedFrom, DateTimeKind.Unspecified);
+            var toLocal = DateTime.SpecifyKind(request.ReservedTo, DateTimeKind.Unspecified);
 
-            if (toUtc <= fromUtc)
+            if (toLocal <= fromLocal)
             {
                 throw new InvalidOperationException("Thời gian đặt không hợp lệ.");
             }
 
-            if ((toUtc - fromUtc).TotalMinutes > 90)
+            if ((toLocal - fromLocal).TotalMinutes > 90)
             {
                 throw new InvalidOperationException("Thời lượng đặt tối đa 90 phút.");
             }
 
-            if (fromUtc < DateTime.UtcNow.AddMinutes(10))
+            if (fromLocal < DateTime.Now.AddMinutes(10))
             {
                 throw new InvalidOperationException("Phải đặt trước ít nhất 10 phút.");
             }
 
             var userRese = await _reservationRepo.GetByUserId(userId);
-            if (userRese.Any(r => r.Status == ReservationStatus.Pending && r.ReservedFrom < toUtc && r.ReservedTo > fromUtc))
+            if (userRese.Any(r => r.Status == ReservationStatus.Pending && r.ReservedFrom < toLocal && r.ReservedTo > fromLocal))
             {
                 throw new InvalidOperationException("Bạn đã có lịch trùng thời gian.");
             }
@@ -120,13 +124,22 @@ namespace Application.Services
 
             using (var transaction = await _reservationRepo.BeginTransactionAsync())
             {
-                var candidateIds = await _inventoryRepo.GetFullBatteryIdsByModel(request.StationId, vehicle.BatteryModelPreferenceId.Value);
+                var candidateIds = await _inventoryRepo.GetFullBatteryIdsByModel(
+                    request.StationId,
+                    vehicle.BatteryModelPreferenceId.Value
+                );
+
                 if (!candidateIds.Any())
                 {
                     throw new InvalidOperationException("Không còn pin đầy phù hợp.");
                 }
 
-                var overlapping = await _reservationAllocationRepo.GetOverlappingBatteryIds(candidateIds, fromUtc, toUtc);
+                var overlapping = await _reservationAllocationRepo.GetOverlappingBatteryIds(
+                    candidateIds,
+                    fromLocal,
+                    toLocal
+                );
+
                 var freeBatteryId = candidateIds.Except(overlapping).FirstOrDefault();
                 if (freeBatteryId == 0)
                 {
@@ -138,22 +151,24 @@ namespace Application.Services
                     UserId = userId,
                     StationId = request.StationId,
                     VehicleId = vehicle.VehicleId,
-                    ReservedFrom = fromUtc,
-                    ReservedTo = toUtc,
+                    ReservedFrom = fromLocal,
+                    ReservedTo = toLocal,
                     ReservedBatteryModelId = vehicle.BatteryModelPreferenceId.Value,
                     Status = ReservationStatus.Pending,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now 
                 };
+
                 await _reservationRepo.Add(reservation);
 
                 allocation = new ReservationAllocation
                 {
                     ReservationId = reservation.ReservationId,
                     BatteryId = freeBatteryId,
-                    AllocatedAt = DateTime.UtcNow,
-                    HoldUntil = fromUtc.AddMinutes(15),
+                    AllocatedAt = DateTime.Now, 
+                    HoldUntil = fromLocal.AddMinutes(15),
                     Status = ReservationAllocationStatus.Active
                 };
+
                 await _reservationAllocationRepo.Add(allocation);
 
                 await transaction.CommitAsync();

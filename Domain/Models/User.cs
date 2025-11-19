@@ -8,6 +8,7 @@ namespace Domain.Models;
 
 public partial class User : IdentityUser
 {
+    public string FId { get; set; }
     public string FullName { get; set; }
     public DateTime CreatedAt { get; set; }
     public string RefreshToken { get; set; }
