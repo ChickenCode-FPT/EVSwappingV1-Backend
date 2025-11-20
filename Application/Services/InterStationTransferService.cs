@@ -10,14 +10,16 @@ namespace Application.Services
     {
         private readonly IInterStationTransferRepository _repository;
         private readonly IStationStaffRepository _stationStaffRepo;
+        private readonly IStationInventoryRepository _stationInventoryRepository;
 
         private readonly IMapper _mapper;
 
-        public InterStationTransferService(IInterStationTransferRepository repository, IMapper mapper, IStationStaffRepository stationStaffRepo)
+        public InterStationTransferService(IInterStationTransferRepository repository, IMapper mapper, IStationStaffRepository stationStaffRepo, IStationInventoryRepository stationInventoryRepository)
         {
             _repository = repository;
             _mapper = mapper;
             _stationStaffRepo = stationStaffRepo;
+            _stationInventoryRepository = stationInventoryRepository;
         }
 
         public async Task<InterStationTransferDto> CreateTransferAsync(CreateTransferDto dto)

@@ -29,6 +29,12 @@ namespace Infrastructure.Services
             return users.Select(u => u.Email ?? string.Empty).ToList();
         }
 
+        public async Task<User?> GetUser(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            return user;
+        }
+
         public async Task<List<UserDto>> GetAllUserDtoAsync()
         {
             var users = await _userManager.Users.ToListAsync();

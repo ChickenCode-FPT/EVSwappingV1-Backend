@@ -45,6 +45,14 @@ namespace EVSwapping.Controllers
             return Ok(payments);
         }
 
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetPaymentAndSwap()
+        {
+            var payments = await _paymentService.GetPaymentAndSwap();
+            return Ok(payments);
+        }
+
+
         [HttpPost("update-status")]
         public async Task<IActionResult> UpdateStatus([FromBody] PaymentStatusUpdateDto dto)
         {

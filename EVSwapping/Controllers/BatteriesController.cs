@@ -54,17 +54,23 @@ namespace EVSwapping.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateBattery([FromBody] CreateBatteryDto dto)
+        public async Task<IActionResult> AddBattery([FromBody] CreateBatteryCommand command)
         {
 
+            try
+            {
+                var result = await _mediator.Send(command);
+                return Ok(new { message = "Battery added successfully.", batteryId = result });
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("duplicate"))
+                {
+                    return BadRequest(new { message = ex.Message });
+                }
 
-            var command = new CreateBatteryCommand(dto.ModelId, dto.Capacity);
-
-            var id = await _mediator.Send(command);
-
-            return CreatedAtAction(nameof(GetBatteries), new { id }, new { BatteryId = id });
+                return StatusCode(500, new { message = "Internal Server Error", details = ex.Message });
+            }
         }
-
-
     }
 }

@@ -10,13 +10,10 @@ namespace Application.SwapTransactions.Commands
         public long SwapTransactionId { get; init; }
         public string CustomerId { get; init; }
         public string? StaffId { get; init; }
-        public int? OldBatteryId { get; init; }
-        public int? NewBatteryId { get; init; }
         public decimal Fee { get; init; }
         public string? SwapStatus { get; init; }
     }
 
-    // Xử lý lệnh cập nhật giao dịch swap
     public class UpdateSwapTransactionCommandHandler : IRequestHandler<UpdateSwapTransactionCommand, int>
     {
         private readonly ISwapTransactionRepository _repo;

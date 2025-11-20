@@ -8,7 +8,9 @@ using Application.Dtos.Station;
 using Application.Dtos.Subscription;
 using Application.Dtos.Swap;
 using Application.Dtos.User;
+using Application.SwapTransactions.Commands;
 using AutoMapper;
+using Domain.Dtos;
 using Domain.Models;
 
 namespace Application.Mappings
@@ -37,17 +39,18 @@ namespace Application.Mappings
             CreateMap<StationInventory, StationInventoryDto>()
                 .ForMember(dest => dest.Batteries, opt => opt.MapFrom(src => src.Battery));
 
-            //
+            //Battery
+            CreateMap<CreateBatteryCommand, Battery>();
+
 
 
             //swap transaction
-            //CreateMap<UpdateSwapTransactionCommand, SwapTransaction>()
-            //.ForMember(dest => dest.StaffUserId, opt => opt.MapFrom(src => src.StaffId))
-            //.ForMember(dest => dest.CustomerUserId, opt => opt.MapFrom(src => src.CustomerId))
-            //.ForMember(dest => dest.OutgoingBatteryId, opt => opt.MapFrom(src => src.OldBatteryId))
-            //.ForMember(dest => dest.IncomingBatteryId, opt => opt.MapFrom(src => src.NewBatteryId))
-            //.ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Fee))
-            //.ForMember(dest => dest.SwapStatus, opt => opt.MapFrom(src => src.SwapStatus));
+            CreateMap<UpdateSwapTransactionCommand, SwapTransaction>()
+                .ForMember(dest => dest.StaffUserId, opt => opt.MapFrom(src => src.StaffId))
+                .ForMember(dest => dest.CustomerUserId, opt => opt.MapFrom(src => src.CustomerId))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Fee))
+                .ForMember(dest => dest.SwapStatus, opt => opt.MapFrom(src => src.SwapStatus));
+
 
             CreateMap<TranscationDto, SwapTransaction>().ReverseMap();
 
@@ -197,7 +200,11 @@ namespace Application.Mappings
            .ForMember(dest => dest.RequestedByUserName, opt => opt.MapFrom(src => src.RequestedByUser.UserName))
            .ForMember(dest => dest.ApprovedByUserName, opt => opt.MapFrom(src => src.ApprovedByUser.UserName));
 
-
+            //user
+            CreateMap<User, StaffDto>()
+                .ForMember(dest => dest.Roles, opt => opt.Ignore())
+                .ForMember(dest => dest.Lockout, opt => opt.MapFrom(src => src.LockoutEnabled && src.LockoutEnd > DateTime.UtcNow));
+            CreateMap<User, StaffUpdateDto>().ReverseMap();
         }
     }
 }
