@@ -17,6 +17,11 @@ namespace Infrastructure.Persistance.Repositories
             _logger = logger;
         }
 
+        public async Task SaveChanges()
+        {
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<StationInventory?> GetInventory(int stationId, CancellationToken ct)
         {
             return await _context.StationInventories
@@ -245,6 +250,23 @@ namespace Infrastructure.Persistance.Repositories
             return 0;
         }
 
+        public async Task<IEnumerable<StationInventory>> GetAvailableOutgoingBatteries(int stationId, int? batteryModelId = null)
+        {
+            var query = _context.StationInventories
+                .Include(i => i.Battery).ThenInclude(b => b.BatteryModel)
+                .Where(i =>
+                    i.StationId == stationId &&
+                    i.Status == BatteryStatus.Full &&                // inventory full
+                    i.Battery.Status == BatteryStatus.Full &&        // battery full
+                    i.ReservationId == null                          // không bị giữ
+                );
 
+            if (batteryModelId.HasValue)
+            {
+                query = query.Where(i => i.Battery.BatteryModelId == batteryModelId.Value);
+            }
+
+            return await query.ToListAsync();
+        }
     }
 }

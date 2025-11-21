@@ -14,6 +14,20 @@ namespace EVSwapping.Controllers
             _batteryService = batteryService;
         }
 
+        [HttpGet("stations/{stationId}/batteries/available-outgoing")]
+        public async Task<IActionResult> GetAvailableOutgoing(int stationId, [FromQuery] int? batteryModelId = null)
+        {
+            var result = await _batteryService.GetAvailableOutgoing(stationId, batteryModelId);
+            return Ok(result);
+        }
+
+        [HttpGet("users/{userId}/batteries/inuse")]
+        public async Task<IActionResult> GetIncomingInUse(string userId)
+        {
+            var result = await _batteryService.GetIncomingForUser(userId);
+            return Ok(result);
+        }
+
         [HttpGet("available")]
         public async Task<IActionResult> GetAvailableBatteries([FromQuery] int stationId, [FromQuery] int? batteryModelId = null)
         {

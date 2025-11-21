@@ -172,6 +172,16 @@ namespace EVSwapping.Controllers
             return Ok(new { message = $"Swap #{id} deleted successfully." });
         }
 
+        [HttpPost("v2/confirm")]
+        public async Task<IActionResult> ConfirmSwap([FromBody] ConfirmSwapByStaffRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _swapService.ConfirmSwapByStaff(request);
+            return Ok(result);
+        }
+
         [HttpGet("ping")]
         public IActionResult Ping()
         {

@@ -20,6 +20,7 @@ namespace Application.Services
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUser;
         private readonly ILogger<PaymentService> _logger;
+        private readonly ISwapTransactionRepository _swapRepo;
 
         public PaymentService(
             IPaymentRepository paymentRepo,
@@ -27,7 +28,8 @@ namespace Application.Services
             IPaymentGatewayClient gateway,
             IMapper mapper,
             ICurrentUserService currentUser,
-            ILogger<PaymentService> logger)
+            ILogger<PaymentService> logger,
+            ISwapTransactionRepository swapRepo)
         {
             _paymentRepo = paymentRepo;
             _reservationRepo = reservationRepo;
@@ -35,6 +37,7 @@ namespace Application.Services
             _mapper = mapper;
             _currentUser = currentUser;
             _logger = logger;
+            _swapRepo = swapRepo;
         }
 
         public async Task<PaymentResponseDto> CreatePayment(PaymentCreateDto dto)
@@ -99,20 +102,48 @@ namespace Application.Services
         public async Task UpdateLinkedEntitiesAfterPayment(Payment payment)
         {
             if (payment.Status != PaymentStatus2.Paid)
-            {
                 return;
+
+            if (!payment.ReservationId.HasValue)
+                return;
+
+            var res = await _reservationRepo.GetById(payment.ReservationId.Value);
+            if (res == null)
+                return;
+
+            if (res.Status == ReservationStatus.Pending)
+            {
+                res.Status = ReservationStatus.Confirmed;
+                res.UpdatedAt = DateTime.UtcNow;
+                await _reservationRepo.Update(res);
             }
 
-            if (payment.ReservationId.HasValue)
+            var swapTx = new SwapTransaction
             {
-                var res = await _reservationRepo.GetById(payment.ReservationId.Value);
-                if (res != null && res.Status == ReservationStatus.Pending)
-                {
-                    res.Status = ReservationStatus.Confirmed;
-                    res.UpdatedAt = DateTime.UtcNow;
-                    await _reservationRepo.Update(res);
-                }
-            }
+                ReservationId = res.ReservationId,
+                StationId = res.StationId,
+                CustomerUserId = res.UserId,
+
+                StaffUserId = null,
+                OutgoingBatteryId = null,
+                IncomingBatteryId = null,
+
+                SwapStartedAt = DateTime.UtcNow,
+                SwapFinishedAt = null,
+
+                SwapStatus = SwapStatus.Pending,
+
+                Price = payment.Amount,
+
+                Notes = "Deposit includes swap fee.",
+                PaymentType = PaymentType.SwapFee,
+                IsPenalty = false,
+
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            await _swapRepo.Add(swapTx);
+            await _swapRepo.SaveChanges();
 
             await _paymentRepo.SaveChanges();
         }
@@ -147,6 +178,33 @@ namespace Application.Services
             var payments = await _paymentRepo.GetFilterWithSwapt();
 
             return _mapper.Map<IEnumerable<PaymentAndTranDto>>(payments);
+        }
+
+        public async Task<PaymentResponseDto?> CompleteOfflinePayment(PaymentManualCompleteDto dto)
+        {
+            var payment = await _paymentRepo.GetById(dto.PaymentId);
+            if (payment == null)
+                return null;
+
+            if (payment.Status == PaymentStatus2.Paid)
+                return _mapper.Map<PaymentResponseDto>(payment);
+
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+
+            payment.Status = PaymentStatus2.Paid;
+            payment.Method = dto.Method;            
+            payment.PaidAt = dto.PaidAt ?? DateTime.UtcNow;
+            payment.CreatedAt = DateTime.UtcNow;
+            payment.Description = $"Offline payment confirmed by staff {dto.StaffUserId}";
+
+            await _paymentRepo.Update(payment);
+
+            await UpdateLinkedEntitiesAfterPayment(payment);
+
+            await _paymentRepo.SaveChanges();
+            scope.Complete();
+
+            return _mapper.Map<PaymentResponseDto>(payment);
         }
     }
 }

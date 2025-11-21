@@ -4,6 +4,8 @@ namespace Application.Common.Interfaces.Repositories
 {
     public interface IStationInventoryRepository
     {
+        Task<IEnumerable<StationInventory>> GetAvailableOutgoingBatteries(int stationId, int? batteryModelId = null);
+        Task SaveChanges();
         Task<IEnumerable<StationInventory>> GetByStationId(int stationId);
 
         Task<StationInventory?> GetBybatteryId(int batteryId);

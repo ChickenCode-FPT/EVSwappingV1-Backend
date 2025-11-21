@@ -21,6 +21,7 @@ namespace Application.Services
         private readonly ILogger<SwapTransactionService> _logger;
         private readonly IPaymentRepository _paymentRepo;
         private readonly IMapper _mapper;
+        private readonly IStationInventoryRepository _inventoryRepo;
 
         public SwapTransactionService(
             ISwapTransactionRepository swapRepo,
@@ -29,7 +30,8 @@ namespace Application.Services
             IPaymentService paymentService,
             IMapper mapper,
             IPaymentRepository paymentRepo,
-            ILogger<SwapTransactionService> logger)
+            ILogger<SwapTransactionService> logger,
+            IStationInventoryRepository inventoryRepo)
         {
             _swapRepo = swapRepo;
             _reservationRepo = reservationRepo;
@@ -38,6 +40,34 @@ namespace Application.Services
             _mapper = mapper;
             _paymentRepo = paymentRepo;
             _logger = logger;
+            _inventoryRepo = inventoryRepo;
+        }
+
+        public async Task<SwapTransactionDto2> ConfirmSwapByStaff(ConfirmSwapByStaffRequest request)
+        {
+            var swap = await _swapRepo.GetById2(request.SwapTransactionId)
+               ?? throw new KeyNotFoundException("Swap transaction not found");
+
+            if (swap.SwapStatus == SwapStatus.Completed)
+                throw new InvalidOperationException("Swap already completed.");
+
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+
+            swap.StaffUserId = request.StaffUserId;
+
+            swap.OutgoingBatteryId = request.OutgoingBatteryId;
+
+            swap.SwapStatus = SwapStatus.InProgress;
+
+            if (!string.IsNullOrEmpty(request.Notes))
+                swap.Notes = request.Notes;
+
+            await _swapRepo.Update2(swap);
+
+            await _swapRepo.SaveChanges();
+            scope.Complete();
+
+            return _mapper.Map<SwapTransactionDto2>(swap);
         }
 
         public async Task<IEnumerable<SwapTransactionDto2>> GetAll2()
@@ -83,14 +113,60 @@ namespace Application.Services
             var swap = await _swapRepo.GetById2(request.SwapTransactionId)
                 ?? throw new KeyNotFoundException("Swap transaction not found");
 
-            swap.IncomingBatteryId ??= request.IncomingBatteryId;
-            swap.SwapFinishedAt = DateTime.UtcNow;
-            swap.Price = request.FinalPrice ?? swap.Price;
+            if (swap.SwapStatus == SwapStatus.Completed)
+                throw new InvalidOperationException("Already completed.");
+
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+
+            swap.IncomingBatteryId = request.IncomingBatteryId;
+
+            if (!string.IsNullOrEmpty(request.Notes))
+                swap.Notes += " | " + request.Notes;
+
             swap.SwapStatus = SwapStatus.Completed;
-            swap.Notes = request.Notes ?? swap.Notes;
+            swap.SwapFinishedAt = DateTime.UtcNow;
 
             await _swapRepo.Update2(swap);
 
+
+            var outgoingInv = await _inventoryRepo.GetBybatteryId((int)swap.OutgoingBatteryId);
+            if (outgoingInv != null)
+            {
+                outgoingInv.Status = BatteryStatus.InUse;   
+                outgoingInv.CheckedAt = DateTime.UtcNow;
+                outgoingInv.ReservationId = null;
+                await _inventoryRepo.Update(outgoingInv);
+            }
+
+            var incomingInv = await _inventoryRepo.GetBybatteryId((int)swap.IncomingBatteryId);
+            if (incomingInv != null)
+            {
+                incomingInv.Status = BatteryStatus.Empty;
+                incomingInv.CheckedAt = DateTime.UtcNow;
+                incomingInv.ReservationId = null;
+                await _inventoryRepo.Update(incomingInv);
+            }
+
+            if (swap.ReservationId != null)
+            {
+                var res = await _reservationRepo.GetById(swap.ReservationId.Value);
+
+                if (res != null)
+                {
+                    res.Status = ReservationStatus.Completed;
+                    res.UpdatedAt = DateTime.UtcNow;
+                    await _reservationRepo.Update(res);
+
+                    foreach (var alloc in res.ReservationAllocations)
+                        alloc.Status = ReservationAllocationStatus.Consumed;
+                }
+            }
+
+            await _swapRepo.SaveChanges();
+            await _reservationRepo.SaveChanges();
+            await _inventoryRepo.SaveChanges();
+
+            scope.Complete();
             return _mapper.Map<SwapTransactionDto2>(swap);
         }
 

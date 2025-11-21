@@ -125,8 +125,7 @@
     public class CompleteSwapTransactionRequest
     {
         public long SwapTransactionId { get; set; }
-        public int? IncomingBatteryId { get; set; }
-        public decimal? FinalPrice { get; set; }
+        public int IncomingBatteryId { get; set; } 
         public string? Notes { get; set; }
     }
 }

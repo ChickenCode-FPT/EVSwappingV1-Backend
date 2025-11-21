@@ -5,6 +5,7 @@ namespace Application.Common.Interfaces
 {
     public interface IPaymentService
     {
+        Task<PaymentResponseDto?> CompleteOfflinePayment(PaymentManualCompleteDto dto);
         Task<PaymentResponseDto> CreatePayment(PaymentCreateDto dto);
         Task<PaymentResponseDto?> UpdatePaymentStatus(PaymentStatusUpdateDto dto);
         Task UpdateLinkedEntitiesAfterPayment(Payment payment);
