@@ -1,4 +1,4 @@
-﻿using Application.Common.Interfaces;
+using Application.Common.Interfaces;
 using Application.Common.Interfaces.Repositories;
 using Application.Common.Interfaces.Services;
 using Application.Common.Interfaces.Services.Application.Common.Interfaces.Services;
@@ -110,6 +110,11 @@ namespace Infrastructure
             services.AddScoped<ISwapTransactionRepository, SwapTransactionRepository>();
             services.AddScoped<IReservationAllocationRepository, ReservationAllocationRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IRevenueRepository, RevenueRepository>();
+
+            services.AddHttpClient();
+            services.AddScoped<IChatbotService, ChatbotService>();
+
             services.AddScoped<IPaymentGatewayClient, VnpayClient>();
             services.AddScoped<IBatteryHealthLogsRepository, BatteryHealthLogsRepository>();
             services.AddScoped<IStationStaffRepository, StationStaffRepository>();

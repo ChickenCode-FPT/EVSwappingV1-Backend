@@ -1,4 +1,4 @@
-﻿using Application.Common.Interfaces;
+using Application.Common.Interfaces;
 using Application.Common.Interfaces.Services;
 using Application.Mappings;
 using Application.Services;
@@ -28,6 +28,7 @@ namespace Application
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IRatingService, RatingService>();
             services.AddScoped<ISupportTicketService, SupportTicketService>();
+            services.AddScoped<IStatisticService, StatisticService>();
             services.AddScoped<ISwapTransactionService, SwapTransactionService>();
 
             services.AddScoped<IBatteryHealthlogsService, BatteryHealthLogsService>();
