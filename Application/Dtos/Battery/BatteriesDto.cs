@@ -17,12 +17,14 @@
     public class BatteryModelDto
     {
         public int BatteryModelId { get; set; }
-        public string ModelCode { get; set; }
-        public string Manufacturer { get; set; }
+        public string ModelCode { get; set; } = string.Empty;
+        public string Manufacturer { get; set; } = string.Empty;
         public decimal CapacityKwh { get; set; }
-        public string Chemistry { get; set; }
-        public string CompatibleVehicleTypes { get; set; }
+        public string Chemistry { get; set; } = string.Empty;
+        public string CompatibleVehicleTypes { get; set; } = string.Empty;
         public decimal ReservationDepositFee { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
+        public int CapacityWh { get; set; }
     }
 }

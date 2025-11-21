@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces.Repositories;
+using Domain.Enums;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -153,6 +154,13 @@ namespace Infrastructure.Persistance.Repositories
                 .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
+        }
+
+        public async Task<Payment?> GetDepositPaymentForReservation(int reservationId)
+        {
+            return await _context.Payments.Where(p => p.ReservationId == reservationId && p.Type == PaymentType.ReservationDeposit)
+                .OrderByDescending(p => p.CreatedAt)
+                .FirstOrDefaultAsync();
         }
     }
 }

@@ -43,6 +43,8 @@ namespace Infrastructure.Persistance.Repositories
 
         public async Task<IEnumerable<StationInventory>> GetAvailableBatteries(int stationId, int? batteryModelId = null)
         {
+            var now = DateTime.UtcNow;
+
             var query = _context.StationInventories
                 .Include(i => i.Battery)
                 .Where(i =>
@@ -51,9 +53,18 @@ namespace Infrastructure.Persistance.Repositories
                     i.Battery.Status == BatteryStatus.Full);
 
             if (batteryModelId.HasValue)
+            {
                 query = query.Where(i => i.Battery.BatteryModelId == batteryModelId.Value);
+            }
 
-            return await query.ToListAsync();
+            var heldIds = await _context.ReservationAllocations
+                .Where(a =>
+                    a.Status == ReservationAllocationStatus.Active &&
+                    a.HoldUntil > now)
+                .Select(a => a.BatteryId)
+                .ToListAsync();
+
+            return await query.Where(i => !heldIds.Contains(i.BatteryId)).ToListAsync();
         }
 
         public async Task<List<int>> GetFullBatteryIdsByModel(int stationId, int batteryModelId)

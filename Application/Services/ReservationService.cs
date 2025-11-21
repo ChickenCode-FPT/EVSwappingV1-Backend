@@ -89,26 +89,27 @@ namespace Application.Services
                 throw new InvalidOperationException("Xe chưa gán model pin phù hợp.");
             }
 
-            var fromLocal = DateTime.SpecifyKind(request.ReservedFrom, DateTimeKind.Unspecified);
-            var toLocal = DateTime.SpecifyKind(request.ReservedTo, DateTimeKind.Unspecified);
+            var vnTime = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var fromUtc = TimeZoneInfo.ConvertTimeToUtc(request.ReservedFrom, vnTime);
+            var toUtc = TimeZoneInfo.ConvertTimeToUtc(request.ReservedTo, vnTime);
 
-            if (toLocal <= fromLocal)
+            if (toUtc <= fromUtc)
             {
                 throw new InvalidOperationException("Thời gian đặt không hợp lệ.");
             }
 
-            if ((toLocal - fromLocal).TotalMinutes > 90)
+            if ((toUtc - fromUtc).TotalMinutes > 90)
             {
                 throw new InvalidOperationException("Thời lượng đặt tối đa 90 phút.");
             }
 
-            if (fromLocal < DateTime.Now.AddMinutes(10))
+            if (fromUtc < DateTime.UtcNow.AddMinutes(10))
             {
                 throw new InvalidOperationException("Phải đặt trước ít nhất 10 phút.");
             }
 
             var userRese = await _reservationRepo.GetByUserId(userId);
-            if (userRese.Any(r => r.Status == ReservationStatus.Pending && r.ReservedFrom < toLocal && r.ReservedTo > fromLocal))
+            if (userRese.Any(r => r.Status == ReservationStatus.Pending && r.ReservedFrom < toUtc && r.ReservedTo > fromUtc))
             {
                 throw new InvalidOperationException("Bạn đã có lịch trùng thời gian.");
             }
@@ -124,21 +125,14 @@ namespace Application.Services
 
             using (var transaction = await _reservationRepo.BeginTransactionAsync())
             {
-                var candidateIds = await _inventoryRepo.GetFullBatteryIdsByModel(
-                    request.StationId,
-                    vehicle.BatteryModelPreferenceId.Value
-                );
+                var candidateIds = await _inventoryRepo.GetFullBatteryIdsByModel(request.StationId, vehicle.BatteryModelPreferenceId.Value);
 
                 if (!candidateIds.Any())
                 {
                     throw new InvalidOperationException("Không còn pin đầy phù hợp.");
                 }
 
-                var overlapping = await _reservationAllocationRepo.GetOverlappingBatteryIds(
-                    candidateIds,
-                    fromLocal,
-                    toLocal
-                );
+                var overlapping = await _reservationAllocationRepo.GetOverlappingBatteryIds(candidateIds, fromUtc, toUtc);
 
                 var freeBatteryId = candidateIds.Except(overlapping).FirstOrDefault();
                 if (freeBatteryId == 0)
@@ -151,11 +145,11 @@ namespace Application.Services
                     UserId = userId,
                     StationId = request.StationId,
                     VehicleId = vehicle.VehicleId,
-                    ReservedFrom = fromLocal,
-                    ReservedTo = toLocal,
+                    ReservedFrom = fromUtc,
+                    ReservedTo = toUtc,
                     ReservedBatteryModelId = vehicle.BatteryModelPreferenceId.Value,
                     Status = ReservationStatus.Pending,
-                    CreatedAt = DateTime.Now 
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 await _reservationRepo.Add(reservation);
@@ -164,8 +158,8 @@ namespace Application.Services
                 {
                     ReservationId = reservation.ReservationId,
                     BatteryId = freeBatteryId,
-                    AllocatedAt = DateTime.Now, 
-                    HoldUntil = fromLocal.AddMinutes(15),
+                    AllocatedAt = DateTime.UtcNow,
+                    HoldUntil = fromUtc.AddMinutes(15),
                     Status = ReservationAllocationStatus.Active
                 };
 
@@ -203,80 +197,7 @@ namespace Application.Services
 
             return dto;
         }
-
-        //public async Task<ReservationDto> CreateReservation(CreateReservationRequest request)
-        //{
-        //    var userId = _currentUser.UserId;
-        //    if(userId == null)
-        //    {
-        //        throw new UnauthorizedAccessException("Ko xác định user");
-        //    }
-
-        //    var user = await _userRepo.GetByIdWithDetailsAsync(userId);
-        //    if(user == null)
-        //    {
-        //        throw new UnauthorizedAccessException("Ko xác định user");
-        //    }
-
-        //    if(user.Driver == null)
-        //    {
-        //        throw new InvalidOperationException("Ban can đang ky Driver trươc");
-        //    }
-
-        //    if (!request.VehicleId.HasValue)
-        //    {
-        //        throw new InvalidOperationException("Ban chua chon phuong tien hop le");
-        //    }
-
-        //    if(!await _vehicleRepo.IsValidVehicleByUser(userId, request.VehicleId.Value))
-        //    {
-        //        throw new InvalidOperationException("Vehicale ko hop le");
-        //    }
-
-        //    var vehicle = await _vehicleRepo.GetById(request.VehicleId.Value);
-        //    if (vehicle.BatteryModelPreference == null) 
-        //    {
-        //        throw new InvalidOperationException("Ban chua dk modle phu hop cho phuong tien cua ban");
-        //    }
-
-        //    var batteryModel = await _batteryModelRepo.GetById(vehicle.BatteryModelPreferenceId.Value);
-        //    if(batteryModel == null)
-        //    {
-        //        throw new InvalidOperationException("Ko co model hop le");
-        //    }
-
-        //    var fromUtc = request.ReservedFrom.ToUniversalTime();
-        //    var toUtc = request.ReservedTo.ToUniversalTime();
-
-        //    if (fromUtc >= toUtc)
-        //    {
-        //        throw new InvalidOperationException("Thoi gian dat ko hop le");
-        //    }
-
-        //    if((toUtc - fromUtc).TotalMinutes > 90)
-        //    {
-        //        throw new InvalidOperationException("Thoi luong dat ko qua 90p");
-        //    }
-
-        //    if(DateTime.UtcNow.AddMinutes(10) > fromUtc)
-        //    {
-        //        throw new InvalidOperationException("Phai dat truoc it nhat 10p");
-        //    }
-
-        //    if(!await _reservationRepo.HasOverlappingReservation(userId, fromUtc, toUtc))
-        //    {
-        //        throw new InvalidOperationException("Ban da co lich trung truoc do");
-        //    }
-
-        //    Reservation reservation;
-        //    ReservationAllocation allocation;
-
-        //    using (var transaction = await _reservationRepo.BeginTransactionAsync())
-        //    {
-
-        //    }
-        //}
-
+         
         public async Task CancelReservation(CancelReservationRequest request)
         {
             var userId = _currentUser.UserId;

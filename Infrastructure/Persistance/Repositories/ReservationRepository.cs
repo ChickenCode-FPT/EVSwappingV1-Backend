@@ -70,6 +70,8 @@ namespace Infrastructure.Persistance.Repositories
             return await _context.Reservations
                 .Include(r => r.Station)
                 .Include(r => r.ReservationAllocations)
+                    .ThenInclude(a => a.Battery)
+                        .ThenInclude(b => b.BatteryModel)
                 .Include(r => r.Payments)
                 .Where(r => r.UserId == userId)
                 .OrderByDescending(r => r.CreatedAt)
@@ -200,6 +202,20 @@ namespace Infrastructure.Persistance.Repositories
                     r.Status == ReservationStatus.Pending &&
                     r.ReservedFrom < toUtc &&
                     r.ReservedTo > fromUtc);
+        }
+
+        public async Task<IEnumerable<Reservation>> GetUnpaidExpiredReservations(DateTime olderThan)
+        {
+            return await _context.Reservations
+                .Where(r => r.Status == ReservationStatus.Pending && r.CreatedAt < olderThan &&
+                    (
+                        r.Payments.Any(p => p.Type == PaymentType.ReservationDeposit && p.Status == PaymentStatus2.Pending)
+                        || !r.Payments.Any(p => p.Type == PaymentType.ReservationDeposit)
+                    )
+                )
+                .Include(r => r.Payments)                    
+                .Include(r => r.ReservationAllocations)
+                .ToListAsync();
         }
     }
 }

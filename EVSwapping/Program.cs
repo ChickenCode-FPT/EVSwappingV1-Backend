@@ -6,16 +6,6 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Serilog
-//builder.Host.UseSerilog((context, config) =>
-//{
-//    config.MinimumLevel.Debug()
-//          .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-//          .WriteTo.File("logs/quartz-.log", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7)
-//          .Enrich.FromLogContext();
-//});
-
-// Controllers & Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

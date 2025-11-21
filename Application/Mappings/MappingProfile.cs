@@ -24,7 +24,12 @@ namespace Application.Mappings
             CreateMap<Battery, BatteriesDto>();
 
             CreateMap<Driver, RegisterDriverResponse>();
-            CreateMap<BatteryModel, BatteryModelDto>();
+
+            CreateMap<BatteryModel, BatteryModelDto>()
+                .ForMember(dest => dest.DisplayName,
+                    opt => opt.MapFrom(src => $"{src.Manufacturer} {src.ModelCode}"))
+                .ForMember(dest => dest.CapacityWh,
+                    opt => opt.MapFrom(src => (int)(src.CapacityKwh * 1000)));
 
             CreateMap<RegisterSubscriptionRequest, Subscription>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(_ => "Active"))
@@ -72,23 +77,48 @@ namespace Application.Mappings
             CreateMap<Station, StationInSwapDto>().ReverseMap();
 
             CreateMap<Reservation, ReservationDto>()
+                .ForMember(dest => dest.Station,
+                    opt => opt.MapFrom(src => src.Station ?? null))
+                .ForMember(dest => dest.BatteryModel,
+                    opt => opt.MapFrom(src =>
+                        src.ReservationAllocations != null
+                            ? src.ReservationAllocations
+                                .Where(a => a.Battery != null && a.Battery.BatteryModel != null)
+                                .Select(a => a.Battery.BatteryModel)
+                                .FirstOrDefault()
+                            : null))
                 .ForMember(dest => dest.Allocation,
-                    opt => opt.MapFrom(src => src.ReservationAllocations.FirstOrDefault()))
+                    opt => opt.MapFrom(src =>
+                        src.ReservationAllocations != null
+                            ? src.ReservationAllocations.FirstOrDefault()
+                            : null))
                 .ForMember(dest => dest.PaymentCheckoutUrl,
-                    opt => opt.MapFrom(src => src.Payments
-                        .OrderByDescending(p => p.CreatedAt)
-                        .Select(p => p.CheckoutUrl)
-                        .FirstOrDefault()))
+                    opt => opt.MapFrom(src =>
+                        src.Payments != null
+                            ? src.Payments
+                                .OrderByDescending(p => p.CreatedAt)
+                                .Select(p => p.CheckoutUrl)
+                                .FirstOrDefault()
+                            : null))
                 .ForMember(dest => dest.PaymentId,
-                    opt => opt.MapFrom(src => src.Payments
-                        .OrderByDescending(p => p.CreatedAt)
-                        .Select(p => (long?)p.PaymentId)
-                        .FirstOrDefault()))
+                    opt => opt.MapFrom(src =>
+                        src.Payments != null
+                            ? src.Payments
+                                .OrderByDescending(p => p.CreatedAt)
+                                .Select(p => (long?)p.PaymentId)
+                                .FirstOrDefault()
+                            : null))
                 .ForMember(dest => dest.PaymentStatus,
-                    opt => opt.MapFrom(src => src.Payments
-                        .OrderByDescending(p => p.CreatedAt)
-                        .Select(p => p.Status)
-                        .FirstOrDefault()));
+                    opt => opt.MapFrom(src =>
+                        src.Payments != null
+                            ? src.Payments
+                                .OrderByDescending(p => p.CreatedAt)
+                                .Select(p => p.Status)
+                                .FirstOrDefault()
+                            : null))
+                .ForMember(d => d.CreatedAt, opt => opt.MapFrom(s => s.CreatedAt))
+                .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(s => s.UpdatedAt));
+
 
             CreateMap<ReservationAllocation, ReservationAllocationDto>().ReverseMap();
 
@@ -190,8 +220,6 @@ namespace Application.Mappings
            .ForMember(dest => dest.BatteryCode, opt => opt.MapFrom(src => src.Battery.SerialNumber))
            .ForMember(dest => dest.RequestedByUserName, opt => opt.MapFrom(src => src.RequestedByUser.UserName))
            .ForMember(dest => dest.ApprovedByUserName, opt => opt.MapFrom(src => src.ApprovedByUser.UserName));
-
-
         }
     }
 }

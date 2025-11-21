@@ -12,9 +12,9 @@ namespace Infrastructure.Services
 
         private readonly Dictionary<string, string> _baseUrls = new()
         {
-            { "car", "http://127.0.0.1:5000" },
-            { "motorbike", "http://127.0.0.1:5001" },
-            { "truck", "http://127.0.0.1:5002" }
+            { "car", "http://127.0.0.1:8080/car" },
+            { "motorbike", "http://127.0.0.1:8080/motorbike" },
+            { "truck", "http://127.0.0.1:8080/truck" }
         };
 
         public OSRMService(HttpClient httpClient, ILogger<OSRMService> logger)

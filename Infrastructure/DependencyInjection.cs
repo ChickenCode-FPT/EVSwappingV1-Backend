@@ -66,14 +66,24 @@ namespace Infrastructure
 
             services.AddQuartz(q =>
             {
-                var expireJob = new JobKey("ExpireAndHoldBackgroundService");
-                q.AddJob<ExpireAndHoldBackgroundService>(opts => opts.WithIdentity(expireJob));
+                var expireJobKey = new JobKey("ExpireAndHoldBackgroundService");
+                q.AddJob<ExpireAndHoldBackgroundService>(opts => opts.WithIdentity(expireJobKey));
+
                 q.AddTrigger(opts => opts
-                    .ForJob(expireJob)
+                    .ForJob(expireJobKey)
                     .WithIdentity("ExpireAndHoldBackgroundService-trigger")
                     .WithSimpleSchedule(x => x
-                        .WithIntervalInMinutes(1)
-                        //.WithIntervalInMinutes(1) 
+                        .WithIntervalInMinutes(1)   
+                        .RepeatForever()));
+
+                var cancelUnpaidKey = new JobKey("CancelUnpaidReservationsJob");
+                q.AddJob<CancelUnpaidReservationsJob>(opts => opts.WithIdentity(cancelUnpaidKey));
+
+                q.AddTrigger(opts => opts
+                    .ForJob(cancelUnpaidKey)
+                    .WithIdentity("CancelUnpaidReservationsJob-trigger")
+                    .WithSimpleSchedule(x => x
+                        .WithIntervalInSeconds(30)   
                         .RepeatForever()));
             });
 
