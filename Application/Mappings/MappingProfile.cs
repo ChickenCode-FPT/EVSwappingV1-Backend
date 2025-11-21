@@ -41,6 +41,7 @@ namespace Application.Mappings
 
             //Battery
             CreateMap<CreateBatteryCommand, Battery>();
+            CreateMap<UpdateBatteryStatusCommand, Battery>();
 
 
 
