@@ -223,8 +223,6 @@ namespace Application.Mappings
             .ForMember(dest => dest.BatteryCode, opt => opt.MapFrom(src => src.Battery.SerialNumber))
             .ForMember(dest => dest.RequestedByUserName, opt => opt.MapFrom(src => src.RequestedByUser.UserName))
             .ForMember(dest => dest.ApprovedByUserName, opt => opt.MapFrom(src => src.ApprovedByUser.UserName));
-            
-           
 
             //user
             CreateMap<User, StaffDto>()
