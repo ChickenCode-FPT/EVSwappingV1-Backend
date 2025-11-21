@@ -34,7 +34,8 @@ namespace EVSwapping.Controllers
         public async Task<IActionResult> CompleteTransfer(long transferId, [FromBody] CompleteInterStationTransfer completeInterStationTransfer)
         {
             var success = await _service.CompleteTransferAsync(transferId, completeInterStationTransfer);
-            return success ? Ok("Transfer completed.") : BadRequest("Invalid transfer or status.");
+            return success ? Ok(new { message = "Transfer completed." })
+            : BadRequest(new { message = "Invalid transfer or status." });
         }
 
         [HttpGet("station/{stationId}")]
