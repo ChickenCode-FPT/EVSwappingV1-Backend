@@ -41,6 +41,13 @@ namespace Infrastructure.Persistance.Repositories
                 .ToListAsync();
         }
 
+        public async Task<StationInventory?> GetBybatteryId(int batteryId)
+        {
+            return await _context.StationInventories
+                .Include(i => i.Battery)
+                .FirstOrDefaultAsync(i => i.BatteryId == batteryId);
+        }
+
         public async Task<IEnumerable<StationInventory>> GetAvailableBatteries(int stationId, int? batteryModelId = null)
         {
             var query = _context.StationInventories
