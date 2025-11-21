@@ -106,5 +106,37 @@ namespace Infrastructure.Persistance.Repositories
             .GroupBy(s => s.SwapStartedAt.Hour)
             .ToDictionaryAsync(g => g.Key, g => g.Count());
     }
+
+    public async Task<Dictionary<DateTime, int>> GetSwapCountPerDayAsync(DateTime startDate, DateTime endDate)
+    {
+        return await _context.SwapTransactions
+            .Where(s => s.SwapStartedAt >= startDate && s.SwapStartedAt <= endDate)
+            .GroupBy(s => s.SwapStartedAt.Date)
+            .ToDictionaryAsync(g => g.Key, g => g.Count());
+    }
+
+    public async Task<Dictionary<int, int>> GetSwapCountPerMonthAsync(DateTime startDate, DateTime endDate)
+    {
+        return await _context.SwapTransactions
+            .Where(s => s.SwapStartedAt >= startDate && s.SwapStartedAt <= endDate)
+            .GroupBy(s => s.SwapStartedAt.Month)
+            .ToDictionaryAsync(g => g.Key, g => g.Count());
+    }
+
+    public async Task<Dictionary<int, int>> GetSwapCountPerQuarterAsync(DateTime startDate, DateTime endDate)
+    {
+        return await _context.SwapTransactions
+            .Where(s => s.SwapStartedAt >= startDate && s.SwapStartedAt <= endDate)
+            .GroupBy(s => (s.SwapStartedAt.Month - 1) / 3 + 1)
+            .ToDictionaryAsync(g => g.Key, g => g.Count());
+    }
+
+    public async Task<Dictionary<int, int>> GetSwapCountPerYearAsync(DateTime startDate, DateTime endDate)
+    {
+        return await _context.SwapTransactions
+            .Where(s => s.SwapStartedAt >= startDate && s.SwapStartedAt <= endDate)
+            .GroupBy(s => s.SwapStartedAt.Year)
+            .ToDictionaryAsync(g => g.Key, g => g.Count());
+    }
     }
 }

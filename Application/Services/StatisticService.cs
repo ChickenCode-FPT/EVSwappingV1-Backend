@@ -41,5 +41,25 @@ namespace Application.Services
         {
             return await _swapTransactionRepository.GetPeakHoursAsync(startDate, endDate);
         }
+
+        public async Task<Dictionary<DateTime, int>> GetSwapCountPerDayAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _swapTransactionRepository.GetSwapCountPerDayAsync(startDate, endDate);
+        }
+
+        public async Task<Dictionary<int, int>> GetSwapCountPerMonthAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _swapTransactionRepository.GetSwapCountPerMonthAsync(startDate, endDate);
+        }
+
+        public async Task<Dictionary<int, int>> GetSwapCountPerQuarterAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _swapTransactionRepository.GetSwapCountPerQuarterAsync(startDate, endDate);
+        }
+
+        public async Task<Dictionary<int, int>> GetSwapCountPerYearAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _swapTransactionRepository.GetSwapCountPerYearAsync(startDate, endDate);
+        }
     }
 }

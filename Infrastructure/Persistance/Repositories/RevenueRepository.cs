@@ -29,7 +29,7 @@ namespace Infrastructure.Persistance.Repositories
         {
             return await _context.Payments
                 .Where(p => p.PaidAt >= startDate && p.PaidAt <= endDate)
-                .GroupBy(p => p.PaidAt.Value.Date)
+                .GroupBy(p => p.PaidAt!.Value.Date)
                 .ToDictionaryAsync(g => g.Key, g => g.Sum(p => p.Amount));
         }
 
@@ -37,7 +37,7 @@ namespace Infrastructure.Persistance.Repositories
         {
             return await _context.Payments
                 .Where(p => p.PaidAt >= startDate && p.PaidAt <= endDate)
-                .GroupBy(p => p.PaidAt.Value.Month)
+                .GroupBy(p => p.PaidAt!.Value.Month)
                 .ToDictionaryAsync(g => g.Key, g => g.Sum(p => p.Amount));
         }
     }

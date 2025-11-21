@@ -18,5 +18,9 @@ namespace Application.Common.Interfaces.Repositories
 
         Task<int> GetSwapCountAsync(DateTime startDate, DateTime endDate);
         Task<Dictionary<int, int>> GetPeakHoursAsync(DateTime startDate, DateTime endDate);
+        Task<Dictionary<DateTime, int>> GetSwapCountPerDayAsync(DateTime startDate, DateTime endDate);
+        Task<Dictionary<int, int>> GetSwapCountPerMonthAsync(DateTime startDate, DateTime endDate);
+        Task<Dictionary<int, int>> GetSwapCountPerQuarterAsync(DateTime startDate, DateTime endDate);
+        Task<Dictionary<int, int>> GetSwapCountPerYearAsync(DateTime startDate, DateTime endDate);
     }
 }
