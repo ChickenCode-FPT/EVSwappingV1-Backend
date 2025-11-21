@@ -1,5 +1,6 @@
 ﻿using Application.Batteries.Commands;
 using Application.Dtos.Battery;
+using Application.StationInventories.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,10 +37,23 @@ namespace EVSwapping.Controllers
         //}
 
         [HttpPut("status")]
-        public async Task<IActionResult> UpdateBatteryStatus([FromBody] UpdateBatteryStatusDto dto)
+        public async Task<IActionResult> UpdateBateryStatus([FromBody] UpdateBatteryStatusCommand command)
         {
-            await _mediator.Send(new UpdateBatteryStatusCommand(dto.Id));
-            return NoContent();
+
+            try
+            {
+                var result = await _mediator.Send(command);
+                return Ok(new { message = "Battery successfully.", batteryId = result });
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("duplicate"))
+                {
+                    return BadRequest(new { message = ex.Message });
+                }
+
+                return StatusCode(500, new { message = "Internal Server Error", details = ex.Message });
+            }
         }
 
         [HttpPut]
@@ -54,17 +68,23 @@ namespace EVSwapping.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateBattery([FromBody] CreateBatteryDto dto)
+        public async Task<IActionResult> AddBattery([FromBody] CreateBatteryCommand command)
         {
 
+            try
+            {
+                var result = await _mediator.Send(command);
+                return Ok(new { message = "Battery added successfully.", batteryId = result });
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("duplicate"))
+                {
+                    return BadRequest(new { message = ex.Message });
+                }
 
-            var command = new CreateBatteryCommand(dto.ModelId, dto.Capacity);
-
-            var id = await _mediator.Send(command);
-
-            return CreatedAtAction(nameof(GetBatteries), new { id }, new { BatteryId = id });
+                return StatusCode(500, new { message = "Internal Server Error", details = ex.Message });
+            }
         }
-
-
     }
 }

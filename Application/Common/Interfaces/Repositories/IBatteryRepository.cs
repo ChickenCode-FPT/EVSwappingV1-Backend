@@ -6,6 +6,8 @@ namespace Application.Common.Interfaces.Repositories
     {
         Task<Battery?> GetById(int batteryId);
         Task<IEnumerable<Battery>> GetAvailableBatteries(int? batteryModelId = null);
+        Task<int> GetBatteryLast();
+        Task<Battery?> GetBySerialNumber(string serialNumber);
         Task UpdateStatus(int batteryId, string status);
         Task Add(Battery battery);
         Task Update(Battery battery);

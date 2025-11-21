@@ -8,6 +8,7 @@ namespace Application.Common.Interfaces.Repositories
         Task<IEnumerable<StationStaff>> GetByStationIdAsync(int stationId);
         Task<IEnumerable<StationStaff>> GetByUserIdAsync(string userId);
         Task<StationStaff?> GetByIdAsync(int stationStaffId);
+        Task<StationStaff?> GetByStaffId(string stationStaffId);
         Task AssignStaffAsync(int stationId, string userId, string role);
         Task DeactivateStaffAsync(int stationStaffId);
         Task RemoveStaffAsync(int stationStaffId);

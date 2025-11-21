@@ -94,7 +94,6 @@ namespace Infrastructure
 
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IStationInventoryService, StationInventoryService>();
             services.AddTransient<IBatteryModelRepository, BatteryModelRepository>();
             services.AddTransient<IPaymentRepository, PaymentRepository>();
 

@@ -45,6 +45,14 @@ namespace Infrastructure.Persistance.Repositories
                 .FirstOrDefaultAsync(ss => ss.StationStaffId == stationStaffId);
         }
 
+        public async Task<StationStaff?> GetByStaffId(string stationStaffId)
+        {
+            return await _context.StationStaffs
+                .Include(ss => ss.User)
+                .Include(ss => ss.Station)
+                .FirstOrDefaultAsync(ss => ss.UserId == stationStaffId);
+        }
+
         public async Task AssignStaffAsync(int stationId, string userId, string role)
         {
             var record = new StationStaff

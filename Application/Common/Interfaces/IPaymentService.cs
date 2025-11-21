@@ -11,5 +11,6 @@ namespace Application.Common.Interfaces
         Task<IEnumerable<PaymentResponseDto>> GetUserPayments(string userId);
         Task<PaymentResponseDto?> GetPaymentById(long id);
         Task<IEnumerable<PaymentResponseDto>> GetMyPayments();
+        Task<IEnumerable<PaymentAndTranDto>> GetPaymentAndSwap();
     }
 }
