@@ -5,8 +5,9 @@ namespace Application.Common.Interfaces.Services
 {
     public interface IBatteryService
     {
+        Task<IEnumerable<BatteryDto>> GetIncomingForUser(string userId);
         Task<IEnumerable<BatteryDto>> GetAvailableBatteries(int stationId, int? batteryModelId = null);
-
+        Task<IEnumerable<BatteryDto>> GetAvailableOutgoing(int stationId, int? batteryModelId);
         Task<Battery?> GetById(int id);
         Task<List<Battery>> GetAll();
         Task<List<Battery>> GetByStatus(string status);

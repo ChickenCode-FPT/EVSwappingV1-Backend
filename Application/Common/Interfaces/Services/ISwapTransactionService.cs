@@ -19,5 +19,6 @@ namespace Application.Common.Interfaces.Services
         Task<SwapTransactionDto2> CompleteSwap(CompleteSwapTransactionRequest request);
         Task<bool> DeleteSwap(long id);
         Task<PaymentResponseDto> HandleSwapPayment(long swapTransactionId);
+        Task<SwapTransactionDto2> ConfirmSwapByStaff(ConfirmSwapByStaffRequest request);
     }
 }

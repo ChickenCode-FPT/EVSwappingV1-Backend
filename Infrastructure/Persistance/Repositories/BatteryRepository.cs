@@ -11,6 +11,18 @@ namespace Infrastructure.Persistance.Repositories
 
         public BatteryRepository(EVSwappingV2Context context) => _context = context;
 
+        public async Task<IEnumerable<Battery>> GetInUseByUser(string userId)
+        {
+            return await _context.Batteries
+                .Include(b => b.BatteryModel)
+                .Include(b => b.ReservationAllocations)
+                .Where(b =>
+                    b.Status == BatteryStatus.InUse &&
+                    b.ReservationAllocations.Any(ra => ra.Reservation.UserId == userId)
+                )
+                .ToListAsync();
+        }
+
         public async Task<Battery?> GetById(int id)
             => await _context.Batteries.Include(x => x.BatteryModel).FirstOrDefaultAsync(b => b.BatteryId == id);
 

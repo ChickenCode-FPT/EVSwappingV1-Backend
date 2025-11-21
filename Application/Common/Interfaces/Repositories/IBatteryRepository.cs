@@ -4,6 +4,7 @@ namespace Application.Common.Interfaces.Repositories
 {
     public interface IBatteryRepository
     {
+        Task<IEnumerable<Battery>> GetInUseByUser(string userId);
         Task<Battery?> GetById(int batteryId);
         Task<IEnumerable<Battery>> GetAvailableBatteries(int? batteryModelId = null);
         Task<int> GetBatteryLast();
