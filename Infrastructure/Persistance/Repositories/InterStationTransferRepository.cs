@@ -26,7 +26,7 @@ namespace Infrastructure.Persistance.Repositories
             if (inventorySation == null)
                 throw new ArgumentException("Pin không có trong kho của trạm gửi.");
 
-            if (inventorySation.Status != "Empty")
+            if (inventorySation.Status != "Full")
             {
                 throw new InvalidOperationException("Pin không sẵn sàng trong kho để xuất đi.");
             }
@@ -158,7 +158,7 @@ namespace Infrastructure.Persistance.Repositories
                 StationId = transfer.ToStationId, 
                 BatteryId = transfer.BatteryId,
                 SlotNumber = targetSlot,          
-                Status = "Empty",
+                Status = "Full",
                 CheckedAt = DateTime.UtcNow
             };
             if (oldInventory != null)
@@ -173,7 +173,7 @@ namespace Infrastructure.Persistance.Repositories
 
             if (transfer.Battery != null)
             {
-                transfer.Battery.Status = "Empty"; 
+                transfer.Battery.Status = "Full"; 
             }
             await _context.SaveChangesAsync();
 
