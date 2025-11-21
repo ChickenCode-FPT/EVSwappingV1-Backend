@@ -140,6 +140,6 @@ namespace Application.Services
             var payments = await _paymentRepo.GetUserPayments(userId);
 
             return _mapper.Map<IEnumerable<PaymentResponseDto>>(payments);
-        }
+        }    
     }
 }
