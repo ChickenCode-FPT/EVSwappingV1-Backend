@@ -16,13 +16,13 @@ namespace Application.Dtos
         public string? ToStationName { get; set; }
 
         public int BatteryId { get; set; }
-        public string? BatteryCode { get; set; }
+        public string? BatterySerial { get; set; }
 
         public string? RequestedByUserId { get; set; }
-        public string? RequestedByUserName { get; set; }
+        public string? RequestedBy { get; set; }
 
         public string? ApprovedByUserId { get; set; }
-        public string? ApprovedByUserName { get; set; }
+        public string? ApprovedBy { get; set; }
 
         public string Status { get; set; } = default!;
         public DateTime RequestedAt { get; set; }

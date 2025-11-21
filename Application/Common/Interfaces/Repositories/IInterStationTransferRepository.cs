@@ -1,4 +1,5 @@
-﻿using Domain.Models;
+﻿using Application.Dtos;
+using Domain.Models;
 
 namespace Application.Common.Interfaces.Repositories
 {
@@ -10,6 +11,9 @@ namespace Application.Common.Interfaces.Repositories
         Task UpdateAsync(InterStationTransfer transfer);
         Task<List<InterStationTransfer>> GetOutgoingTransfersAsync(int stationId);
         Task<List<InterStationTransfer>> GetIncomingTransfersAsync(int stationId);
+        Task<IEnumerable<InterStationTransfer>> GetAllTransfersAsync();
+        Task<InterStationTransfer?> CompletedTransferAsync(InterStationTransfer requestData, CompleteInterStationTransfer completeInterStationTransfer);
+        Task<List<string>> GetEmptySlotsAsync(int stationId);
     }
 
 }
