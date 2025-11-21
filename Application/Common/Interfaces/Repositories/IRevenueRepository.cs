@@ -9,6 +9,6 @@ namespace Application.Common.Interfaces.Repositories
     {
         Task<decimal> GetTotalRevenueAsync(DateTime startDate, DateTime endDate);
         Task<Dictionary<DateTime, decimal>> GetRevenuePerDayAsync(DateTime startDate, DateTime endDate);
-        Task<Dictionary<int, decimal>> GetRevenuePerMonthAsync(DateTime startDate, DateTime endDate);
+        Task<Dictionary<DateTime, decimal>> GetRevenuePerMonthAsync(DateTime startDate, DateTime endDate);
     }
 }

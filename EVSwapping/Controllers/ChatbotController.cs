@@ -18,14 +18,14 @@ public class ChatbotController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] ChatbotRequest request)
     {
-        if (string.IsNullOrEmpty(request.Message))
+        if (request.History == null || request.History.Count == 0)
         {
-            return BadRequest("Message cannot be empty.");
+            return BadRequest("History cannot be empty.");
         }
 
         try
         {
-            var response = await _chatbotService.SendMessageAsync(request.Message);
+            var response = await _chatbotService.SendMessageAsync(request.History);
 
             return Ok(new { response });
         }

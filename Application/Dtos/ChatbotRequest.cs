@@ -1,8 +1,8 @@
-using System;
+using System.Collections.Generic;
 
 namespace Application.Dtos;
 
 public class ChatbotRequest
 {
-    public string? Message { get; set; }
+    public List<ChatHistoryItemDto> History { get; set; }
 }

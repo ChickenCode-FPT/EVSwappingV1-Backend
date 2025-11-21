@@ -27,7 +27,7 @@ namespace Application.Services
             return await _revenueRepository.GetRevenuePerDayAsync(startDate, endDate);
         }
 
-        public async Task<Dictionary<int, decimal>> GetRevenuePerMonthAsync(DateTime startDate, DateTime endDate)
+        public async Task<Dictionary<DateTime, decimal>> GetRevenuePerMonthAsync(DateTime startDate, DateTime endDate)
         {
             return await _revenueRepository.GetRevenuePerMonthAsync(startDate, endDate);
         }

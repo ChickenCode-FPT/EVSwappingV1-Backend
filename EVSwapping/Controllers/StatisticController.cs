@@ -53,7 +53,7 @@ public class StatisticController : ControllerBase
             case "month":
                 var revenuePerMonth = await _statisticService.GetRevenuePerMonthAsync(startDate, endDate);
                 totalRevenue = revenuePerMonth.Values.Sum();
-                dataPoints = revenuePerMonth.Select(kvp => new TimeSeriesDataPoint<decimal>(CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(kvp.Key), kvp.Value)).ToList();
+                dataPoints = revenuePerMonth.Select(kvp => new TimeSeriesDataPoint<decimal>(kvp.Key.ToString("yyyy-MM-dd"), kvp.Value)).ToList();
                 break;
             case "quarter":
                 break;

@@ -8,7 +8,7 @@ namespace Application.Common.Interfaces.Services
     {
         Task<decimal> GetTotalRevenueAsync(DateTime startDate, DateTime endDate);
         Task<Dictionary<DateTime, decimal>> GetRevenuePerDayAsync(DateTime startDate, DateTime endDate);
-        Task<Dictionary<int, decimal>> GetRevenuePerMonthAsync(DateTime startDate, DateTime endDate);
+        Task<Dictionary<DateTime, decimal>> GetRevenuePerMonthAsync(DateTime startDate, DateTime endDate);
         Task<int> GetSwapCountAsync(DateTime startDate, DateTime endDate);
         Task<Dictionary<int, int>> GetPeakHoursAsync(DateTime startDate, DateTime endDate);
         Task<Dictionary<DateTime, int>> GetSwapCountPerDayAsync(DateTime startDate, DateTime endDate);

@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Application.Common.Interfaces.Services;
+using Application.Dtos;
 using Infrastructure.Services.Gemini;
 using Microsoft.Extensions.Configuration;
 
@@ -20,8 +16,10 @@ namespace Infrastructure.Services
         private readonly string _geminiApiKey;
 
         private const string GetSwapStatisticsFuncName = "get_swap_statistics";
+        private const string GetRevenueStatisticsFuncName = "get_revenue_statistics";
         private const string StartDateArg = "startDate";
         private const string EndDateArg = "endDate";
+        private const string GroupingArg = "grouping";
 
         private static readonly JsonSerializerOptions JsonSerializerOptions = new()
         {
@@ -36,7 +34,7 @@ namespace Infrastructure.Services
             _geminiApiKey = configuration["Gemini:ApiKey"] ?? throw new ArgumentNullException(nameof(configuration), "Gemini ApiKey is not configured.");
         }
 
-        public async Task<string> SendMessageAsync(string message)
+        public async Task<string> SendMessageAsync(List<ChatHistoryItemDto> chatHistory)
         {
             string promp =
 $"""
@@ -45,7 +43,7 @@ Nhiệm vụ của bạn là **giúp người quản lý trạm ra quyết đị
 
 ### Hướng dẫn hành vi:
 - Khi người dùng hỏi về **thống kê, báo cáo, hoặc số liệu hoạt động**, hãy **gọi hàm `get_swap_statistics`** để lấy dữ liệu thực tế.
-- Nếu người dùng **không nêu rõ khoảng thời gian**, hãy giả định:
+- Nếu người dùng **không nêu rõ khoảng thời gian**, hãy mặc định:
   - **Ngày bắt đầu** = 7 ngày trước hôm nay.
   - **Ngày kết thúc** = hôm nay.
 - Nếu người dùng nêu “gần đây”, “tuần này”, “tháng này”, v.v., hãy tự suy luận tương ứng:
@@ -59,16 +57,38 @@ Nhiệm vụ của bạn là **giúp người quản lý trạm ra quyết đị
 - Khi trình bày kết quả, có thể thêm nhận xét hoặc gợi ý hành động (ví dụ: "Giờ cao điểm là 9–11 giờ sáng, nên tăng số lượng pin dự trữ trong khung giờ này.")
 - Không được nói về các khái niệm kỹ thuật như “API”, “hàm”, hay “tham số nội bộ”.
 
+### **Định dạng câu trả lời:**
+- Câu trả lời phải **ngắn gọn, súc tích, ưu tiên số liệu chính trước**.
+- Trình bày dạng **bullet ngắn**, không văn dài dòng.
+- Nếu có nhận xét, chỉ thêm **1–2 ý ngắn**.
+- Không vượt quá **120 từ**, trừ khi người dùng yêu cầu chi tiết.
+- Mẫu định dạng ưu tiên:
+  - **Tóm tắt số liệu chính** (1–2 câu ngắn)
+  - **Các chỉ số dạng bullet**
+  - **Gợi ý hành động ngắn (nếu phù hợp)**
+
 ### Thông tin hệ thống:
 - Ngày hiện tại (UTC): {DateTime.UtcNow:yyyy-MM-dd}
-
-### Câu hỏi của người dùng:
-"{message}"
 """;
+
+            // ### Câu hỏi của người dùng:
+            // "{chatHistory[0].Text}"
+
             var history = new List<Content>
             {
-                new() { Role = "user", Parts = new[] { new Part { Text = promp } } }
+                new Content
+                {
+                    Role = "user",
+                    Parts = [new Part { Text = promp }]
+                }
             };
+
+            history.AddRange(chatHistory.Select(item => new Content
+            {
+                Role = item.Role,
+                Parts = [new Part { Text = item.Text }]
+            }).ToList()
+            );
 
             var request = new GeminiRequest
             {
@@ -112,6 +132,40 @@ Nhiệm vụ của bạn là **giúp người quản lý trạm ra quyết đị
                 var swapCount = await _statisticService.GetSwapCountAsync(startDate, endDate);
                 var peakHours = await _statisticService.GetPeakHoursAsync(startDate, endDate);
                 functionResultContent = new { swapCount, peakHours };
+            }
+            else if (functionCall.Name == GetRevenueStatisticsFuncName)
+            {
+                var args = functionCall.Args;
+                DateTime startDate = DateTime.MinValue, endDate = DateTime.MaxValue;
+                string grouping = "month";
+                if (args != null)
+                {
+                    if (args.TryGetValue(StartDateArg, out var startVal) && startVal is JsonElement startElem && startElem.ValueKind == JsonValueKind.String)
+                    {
+                        DateTime.TryParse(startElem.GetString(), out startDate);
+                    }
+                    if (args.TryGetValue(EndDateArg, out var endVal) && endVal is JsonElement endElem && endElem.ValueKind == JsonValueKind.String)
+                    {
+                        DateTime.TryParse(endElem.GetString(), out endDate);
+                    }
+                    if (args.TryGetValue(GroupingArg, out var groupingVal) && groupingVal is JsonElement groupingElem && groupingElem.ValueKind == JsonValueKind.String)
+                    {
+                        grouping = groupingVal.ToString()!;
+                    }
+                }
+
+                Dictionary<DateTime, decimal> revenues = new();
+                if (grouping.Equals("day"))
+                {
+                    revenues = await _statisticService.GetRevenuePerDayAsync(startDate, endDate);
+                }
+                else
+                {
+                    revenues = await _statisticService.GetRevenuePerMonthAsync(startDate, endDate);
+                }
+
+                functionResultContent = new { revenues };
+
             }
             else
             {
@@ -177,7 +231,23 @@ Nhiệm vụ của bạn là **giúp người quản lý trạm ra quyết đị
                             },
                             Required = new[] { StartDateArg, EndDateArg }
                         }
+                    },
+                new FunctionDeclaration
+                {
+                    Name = GetRevenueStatisticsFuncName,
+                    Description = "Get battery revenue statistics for a given period to forecast demand",
+                    Parameters = new Parameters
+                    {
+                        Type = "OBJECT",
+                        Properties = new
+                        {
+                            startDate = new { type = "STRING", description = "Start date in YYYY-MM-DD format" },
+                            endDate = new { type = "STRING", description = "End date in YYYY-MM-DD format" },
+                            grouping = new {type = "STRING", description = "Time period to group data. Format: month/day. Default to month"}
+                        },
+                        Required = new[] { StartDateArg, EndDateArg}
                     }
+                },
                 }
             };
         }

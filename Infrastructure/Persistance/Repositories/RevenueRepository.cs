@@ -33,11 +33,11 @@ namespace Infrastructure.Persistance.Repositories
                 .ToDictionaryAsync(g => g.Key, g => g.Sum(p => p.Amount));
         }
 
-        public async Task<Dictionary<int, decimal>> GetRevenuePerMonthAsync(DateTime startDate, DateTime endDate)
+        public async Task<Dictionary<DateTime, decimal>> GetRevenuePerMonthAsync(DateTime startDate, DateTime endDate)
         {
             return await _context.Payments
                 .Where(p => p.PaidAt >= startDate && p.PaidAt <= endDate)
-                .GroupBy(p => p.PaidAt!.Value.Month)
+                .GroupBy(p => new DateTime(p.PaidAt!.Value.Year, p.PaidAt.Value.Month, 1))
                 .ToDictionaryAsync(g => g.Key, g => g.Sum(p => p.Amount));
         }
     }
