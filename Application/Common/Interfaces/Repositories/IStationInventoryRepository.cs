@@ -31,5 +31,7 @@ namespace Application.Common.Interfaces.Repositories
         Task<StationInventory> GetInventory(int stationId, CancellationToken ct);
         Task<IEnumerable<StationInventory>> GetInventorys(CancellationToken ct);
         //Task<int> GetBatteryCountByStatus(int stationId, string status);
+
+        Task<List<string>> GetEmptySlots(int stationId);
     }
 }

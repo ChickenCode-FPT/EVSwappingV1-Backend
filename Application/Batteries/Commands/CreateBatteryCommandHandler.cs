@@ -1,4 +1,5 @@
 ﻿using Application.Common.Interfaces.Repositories;
+using Application.Common.Interfaces.Services;
 using AutoMapper;
 using Domain.Models;
 using MediatR;
@@ -9,13 +10,15 @@ namespace Application.Batteries.Commands
     {
         private readonly IBatteryRepository _repo;
         private readonly IStationInventoryRepository _inventoryRepository;
+        private readonly IInterStationTransferService _interStationTransfer;
         private readonly IMapper _mapper;
 
-        public CreateBatteryCommandHandler(IBatteryRepository repo, IMapper mapper, IStationInventoryRepository inventoryRepository)
+        public CreateBatteryCommandHandler(IBatteryRepository repo, IMapper mapper, IStationInventoryRepository inventoryRepository, IInterStationTransferService interStationTransfer)
         {
             _repo = repo;
             _mapper = mapper;
             _inventoryRepository = inventoryRepository;
+            _interStationTransfer = interStationTransfer;
         }
 
         public async Task<int> Handle(CreateBatteryCommand request, CancellationToken cancellationToken)
@@ -41,12 +44,22 @@ namespace Application.Batteries.Commands
                 throw new Exception("BatteryId was not set after insertion. Check your repository Add method.");
             }
 
+            var availableSlots = await _interStationTransfer.GetAvaiableSlot(request.StationId);
+
+
+            if (availableSlots == null || !availableSlots.Any())
+            {
+                availableSlots = await _inventoryRepository.GetEmptySlots(request.StationId);
+            }
+
+            var selectedSlot = availableSlots.First();
+
             await _inventoryRepository.Add(new StationInventory
             {
                 StationId = request.StationId,
                 Status = "Empty",
                 BatteryId = batteryId,
-                SlotNumber = "1"
+                SlotNumber = selectedSlot
             });
 
             return entity.BatteryId;

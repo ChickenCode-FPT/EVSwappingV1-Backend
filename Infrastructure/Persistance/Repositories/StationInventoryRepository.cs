@@ -191,5 +191,49 @@ namespace Infrastructure.Persistance.Repositories
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<string>> GetEmptySlots(int stationId)
+        {
+            var station = await _context.Stations.FirstOrDefaultAsync(s => s.StationId == stationId);
+
+            if (station == null) throw new Exception("Station not found");
+
+            var occupiedSlots = await _context.StationInventories
+                                              .Where(s => s.StationId == stationId)
+                                              .Select(s => s.SlotNumber)
+                                              .ToListAsync();
+
+            int maxNumber = 0;
+
+            foreach (var slotStr in occupiedSlots)
+            {
+                int number = ParseSlotId(slotStr);
+                if (number > maxNumber)
+                {
+                    maxNumber = number;
+                }
+            }
+
+            int nextNumber = maxNumber + 1;
+            string nextSlot = "S" + nextNumber;
+
+            return new List<string> { nextSlot };
+        }
+
+        private int ParseSlotId(string slot)
+        {
+            if (string.IsNullOrWhiteSpace(slot))
+                return 0;
+
+            if (slot.StartsWith("S", StringComparison.OrdinalIgnoreCase))
+            {
+                if (int.TryParse(slot.Substring(1), out int number))
+                    return number;
+            }
+
+            return 0;
+        }
+
+
     }
 }
