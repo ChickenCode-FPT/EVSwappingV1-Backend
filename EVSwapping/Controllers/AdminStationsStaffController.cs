@@ -29,6 +29,13 @@ namespace EVSwapping.Controllers
             return Ok(staffs);
         }
 
+        [HttpGet("{staffId}")]
+        public async Task<IActionResult> GetStationStaff(string staffId)
+        {
+            var staffs = await _stationStaffService.GetByStaffId(staffId);
+            return Ok(staffs);
+        }
+
         [HttpDelete("staff/{stationStaffId}")]
         public async Task<IActionResult> RemoveStaff(int stationStaffId)
         {

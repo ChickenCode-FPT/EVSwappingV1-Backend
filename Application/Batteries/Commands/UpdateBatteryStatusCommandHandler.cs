@@ -1,26 +1,51 @@
 ﻿using Application.Common.Interfaces.Repositories;
+using Application.StationInventories.Commands;
+using AutoMapper;
 using MediatR;
 
 namespace Application.Batteries.Commands
 {
-    public class UpdateBatteryStatusCommandHandler : IRequestHandler<UpdateBatteryStatusCommand>
+    public class UpdateBatteryStatusCommandHandler : IRequestHandler<UpdateBatteryStatusCommand, int>
     {
         private readonly IBatteryRepository _repo;
+        private readonly IStationInventoryRepository _inventoryRepository;
+        private readonly IMapper _mapper;
 
-        public UpdateBatteryStatusCommandHandler(IBatteryRepository repo) => _repo = repo;
-
-        public async Task<Unit> Handle(UpdateBatteryStatusCommand request, CancellationToken cancellationToken)
+        public UpdateBatteryStatusCommandHandler(IMapper mapper, IStationInventoryRepository inventoryRepository, IBatteryRepository repo)
         {
-            var entity = await _repo.GetById(request.Id);
-            if (entity == null) throw new KeyNotFoundException($"Battery {request.Id} not found");
-
-            await _repo.Update(entity);
-            return Unit.Value;
+            _mapper = mapper;
+            _inventoryRepository = inventoryRepository;
+            _repo = repo;
         }
 
-        Task IRequestHandler<UpdateBatteryStatusCommand>.Handle(UpdateBatteryStatusCommand request, CancellationToken cancellationToken)
+        public async Task<int> Handle(UpdateBatteryStatusCommand request, CancellationToken cancellationToken)
         {
-            return Handle(request, cancellationToken);
+            var existingBattery = await _repo.GetById(request.BatteryId);
+
+            if (existingBattery == null)
+            {
+                throw new Exception($"Battery with ID {request.BatteryId} not found.");
+            }
+
+            existingBattery.Status = request.Status;
+            existingBattery.LastMaintenance = DateTime.UtcNow;
+
+            await _repo.Update(existingBattery);
+
+            var newStatus = request.Status?.Trim().ToLowerInvariant();
+
+            if (request.Status == "full")
+            {
+                var existingInventory = await _inventoryRepository.GetBybatteryId(request.BatteryId);
+
+                if (existingInventory != null)
+                {
+                    existingInventory.Status = "Full";
+
+                    await _inventoryRepository.Update(existingInventory);
+                }
+            }
+            return existingBattery.BatteryId;
         }
     }
 }

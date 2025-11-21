@@ -6,6 +6,8 @@ namespace Application.Common.Interfaces.Repositories
     {
         Task<IEnumerable<StationInventory>> GetByStationId(int stationId);
 
+        Task<StationInventory?> GetBybatteryId(int batteryId);
+
         Task<IEnumerable<StationInventory>> GetAvailableBatteries(int stationId, int? batteryModelId = null);
 
         Task<int> CountAvailableBatteries(int stationId, int? batteryModelId = null);

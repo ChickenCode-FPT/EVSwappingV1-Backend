@@ -2,6 +2,7 @@
 using Application.Common.Interfaces.Services;
 using Application.Dtos;
 using AutoMapper;
+using Domain.Models;
 
 namespace Application.Services
 {
@@ -24,6 +25,12 @@ namespace Application.Services
         public async Task<IEnumerable<StationStaffDto>> GetStationStaffsAsync(int stationId)
         {
             var stationStaffs = _mapper.Map<IEnumerable<StationStaffDto>>(await _repository.GetByStationIdAsync(stationId));
+            return stationStaffs;
+        }
+
+        public async Task<StationStaffDto?> GetByStaffId(string stationStaffId)
+        {
+            var stationStaffs = _mapper.Map<StationStaffDto>(await _repository.GetByStaffId(stationStaffId));
             return stationStaffs;
         }
 

@@ -22,7 +22,7 @@ namespace Infrastructure.Persistance.Repositories
             return await _context.StationInventories
                 .Include(si => si.Battery)
                     .ThenInclude(b => b.BatteryModel)
-                .FirstOrDefaultAsync(si => si.StationId == stationId, ct);
+                .FirstOrDefaultAsync(si => si.StationInventoryId == stationId, ct);
         }
 
         public async Task<IEnumerable<StationInventory>> GetInventorys(CancellationToken ct)
@@ -39,6 +39,13 @@ namespace Infrastructure.Persistance.Repositories
                 .Include(i => i.Battery)
                 .Where(i => i.StationId == stationId)
                 .ToListAsync();
+        }
+
+        public async Task<StationInventory?> GetBybatteryId(int batteryId)
+        {
+            return await _context.StationInventories
+                .Include(i => i.Battery)
+                .FirstOrDefaultAsync(i => i.BatteryId == batteryId);
         }
 
         public async Task<IEnumerable<StationInventory>> GetAvailableBatteries(int stationId, int? batteryModelId = null)

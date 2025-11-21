@@ -1,6 +1,7 @@
 ﻿using Application.Common.Interfaces.Services;
 using Application.Dtos;
 using Application.Users.Commands.LockUser;
+using Application.Users.Commands.UpdateProfile;
 using Application.Users.Queries.UserManagement;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +28,28 @@ namespace EVSwapping.Controllers
         {
             var users = await _mediator.Send(new GetAllUserCommand());
             return Ok(users);
+        }
+
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetUser(string userId)
+        {
+            var users = await _mediator.Send(new GetUserQuery(userId));
+            return Ok(users);
+        }
+
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateStaffProfile([FromBody] UpdateStaffProfileCommand command)
+        {
+            try
+            {
+                var result = await _mediator.Send(command);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost("lock/{id}")]

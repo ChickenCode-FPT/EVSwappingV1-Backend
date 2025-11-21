@@ -19,6 +19,21 @@ namespace Infrastructure.Persistance.Repositories
             return await _context.Batteries.Include(x => x.BatteryModel).ToListAsync();
         }
 
+        public async Task<int> GetBatteryLast()
+        {
+            return await _context.Batteries
+                         .OrderByDescending(x => x.BatteryId)
+                         .Select(x => x.BatteryId)
+                         .FirstOrDefaultAsync();
+        }
+
+        public async Task<Battery?> GetBySerialNumber(string serialNumber)
+        {
+            return await _context.Batteries
+                .FirstOrDefaultAsync(b => b.SerialNumber == serialNumber);
+        }
+
+
         public async Task<IEnumerable<Battery>> GetAvailableBatteries(int? batteryModelId = null)
         {
             var query = _context.Batteries.Where(b => b.Status == BatteryStatus.Full);
