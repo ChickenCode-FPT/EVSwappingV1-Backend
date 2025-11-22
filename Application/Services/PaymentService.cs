@@ -123,29 +123,20 @@ namespace Application.Services
                 ReservationId = res.ReservationId,
                 StationId = res.StationId,
                 CustomerUserId = res.UserId,
-
                 StaffUserId = null,
                 OutgoingBatteryId = null,
                 IncomingBatteryId = null,
-
                 SwapStartedAt = DateTime.UtcNow,
-                SwapFinishedAt = null,
-
                 SwapStatus = SwapStatus.Pending,
-
                 Price = payment.Amount,
-
-                Notes = "Deposit includes swap fee.",
+                Notes = "Swap fee paid with reservation.",
                 PaymentType = PaymentType.SwapFee,
                 IsPenalty = false,
-
                 CreatedAt = DateTime.UtcNow,
             };
 
             await _swapRepo.Add(swapTx);
             await _swapRepo.SaveChanges();
-
-            await _paymentRepo.SaveChanges();
         }
 
         public async Task<IEnumerable<PaymentResponseDto>> GetUserPayments(string userId)

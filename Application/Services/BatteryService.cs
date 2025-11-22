@@ -66,5 +66,11 @@ namespace Application.Services
             var list = await _inventoryRepo.GetAvailableOutgoingBatteries(stationId, batteryModelId);
             return _mapper.Map<IEnumerable<BatteryDto>>(list.Select(i => i.Battery));
         }
+
+        public async Task<IEnumerable<BatteryDto>> GetIncomingCandidates(int batteryModelId)
+        {
+            var list = await _batteryRepo.GetIncomingCandidates(batteryModelId);
+            return _mapper.Map<IEnumerable<BatteryDto>>(list);
+        }
     }
 }

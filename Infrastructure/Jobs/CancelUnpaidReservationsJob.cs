@@ -15,7 +15,6 @@ namespace Infrastructure.Jobs
         private readonly IStationInventoryRepository _inventoryRepo;
         private readonly ILogger<CancelUnpaidReservationsJob> _logger;
 
-        //private const int UnpaidMinutes = 5;
         private const int UnpaidMinutes = 5;
 
         public CancelUnpaidReservationsJob(
@@ -45,12 +44,17 @@ namespace Infrastructure.Jobs
             {
                 try
                 {
+                    if (res.Status != ReservationStatus.Pending) continue;
+
                     var payment = await _paymentRepo.GetDepositPaymentForReservation(res.ReservationId);
 
-                    if (payment != null && payment.Status == PaymentStatus2.Pending)
+                    if (payment != null && payment.Type == PaymentType.ReservationDeposit)
                     {
-                        payment.Status = PaymentStatus2.Cancelled;
-                        await _paymentRepo.Update(payment);
+                        if (payment.Status == PaymentStatus2.Pending)
+                        {
+                            payment.Status = PaymentStatus2.Cancelled;
+                            await _paymentRepo.Update(payment);
+                        }
                     }
 
                     var allocations = await _allocationRepo.GetByReservationId(res.ReservationId);
@@ -59,16 +63,17 @@ namespace Infrastructure.Jobs
                     {
                         alloc.Status = ReservationAllocationStatus.Expired;
 
-                        await _inventoryRepo.MarkFull(alloc.BatteryId, res.StationId);
-
                         await _allocationRepo.Update(alloc);
+
+                        // release slot -> pin về FULL
+                        await _inventoryRepo.MarkFull(alloc.BatteryId, res.StationId);
                     }
 
                     res.Status = ReservationStatus.Cancelled;
                     res.UpdatedAt = now;
                     await _reservationRepo.Update(res);
 
-                    _logger.LogInformation($"[CancelUnpaid] Reservation #{res.ReservationId} cancelled due to unpaid timeout.");
+                    _logger.LogInformation($"[CancelUnpaid] Reservation #{res.ReservationId} cancelled.");
                 }
                 catch (Exception ex)
                 {

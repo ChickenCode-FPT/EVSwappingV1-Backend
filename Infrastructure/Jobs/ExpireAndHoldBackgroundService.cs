@@ -14,8 +14,8 @@ namespace Infrastructure.Jobs
         private readonly ISwapTransactionRepository _swapRepo;
         private readonly ILogger<ExpireAndHoldBackgroundService> _logger;
 
-        private const int HoldAheadMinutes = 10;   
-        private const int HoldDurationMinutes = 15; 
+        private const int HoldAheadMinutes = 10;
+        private const int HoldDurationMinutes = 15;
 
         public ExpireAndHoldBackgroundService(
             IReservationRepository reservationRepo,
@@ -36,16 +36,22 @@ namespace Infrastructure.Jobs
             var now = DateTime.UtcNow;
             _logger.LogInformation("=== [ExpireAndHoldJob] Tick at {time} ===", now);
 
+            // hold pin cho reservation sắp đến giờ
             var upcomingReservations = await _reservationRepo.GetPendingReservationsBetween(now, now.AddMinutes(HoldAheadMinutes));
+
             foreach (var res in upcomingReservations)
             {
                 try
                 {
-                    foreach (var alloc in res.ReservationAllocations.Where(a => a.Status == ReservationAllocationStatus.Active))
+                    if (res.Status != ReservationStatus.Pending) continue;
+
+                    foreach (var alloc in res.ReservationAllocations
+                                             .Where(a => a.Status == ReservationAllocationStatus.Active))
                     {
                         await _inventoryRepo.MarkHeld(alloc.BatteryId, res.StationId, res.ReservationId);
-                        _logger.LogInformation($"[Hold] Battery #{alloc.BatteryId} at Station #{res.StationId} for Reservation #{res.ReservationId}");
                     }
+
+                    _logger.LogInformation($"[Hold] Reservation #{res.ReservationId}");
                 }
                 catch (Exception ex)
                 {
@@ -53,24 +59,23 @@ namespace Infrastructure.Jobs
                 }
             }
 
+            // expire các allocation quá hạn
             var expiredAllocations = await _allocationRepo.GetExpiredAllocations(now);
+
             foreach (var alloc in expiredAllocations)
             {
                 try
                 {
                     alloc.Status = ReservationAllocationStatus.Expired;
+                    await _allocationRepo.Update(alloc);
 
                     if (alloc.Reservation != null)
                     {
                         alloc.Reservation.Status = ReservationStatus.Expired;
-                        await _inventoryRepo.MarkFull(alloc.BatteryId, alloc.Reservation.StationId);
-                        _logger.LogInformation($"[Expire] Released Battery #{alloc.BatteryId} from Station #{alloc.Reservation.StationId}");
-                    }
-
-                    await _allocationRepo.Update(alloc);
-                    if (alloc.Reservation != null)
-                    {
+                        alloc.Reservation.UpdatedAt = now;
                         await _reservationRepo.Update(alloc.Reservation);
+
+                        await _inventoryRepo.MarkFull(alloc.BatteryId, alloc.Reservation.StationId);
                     }
                 }
                 catch (Exception ex)
@@ -79,18 +84,18 @@ namespace Infrastructure.Jobs
                 }
             }
 
+            // reservation đã có swap transaction -> Completed
             var pendingReservations = await _reservationRepo.GetPendingReservations();
+
             foreach (var res in pendingReservations)
             {
                 try
                 {
-                    bool hasSwap = await _swapRepo.ExistsByReservationId(res.ReservationId);
-                    if (hasSwap)
+                    if (await _swapRepo.ExistsByReservationId(res.ReservationId))
                     {
                         res.Status = ReservationStatus.Completed;
                         res.UpdatedAt = now;
                         await _reservationRepo.Update(res);
-                        _logger.LogInformation($"[Complete] Reservation #{res.ReservationId} marked as Completed.");
                     }
                 }
                 catch (Exception ex)
@@ -101,6 +106,7 @@ namespace Infrastructure.Jobs
 
             await _allocationRepo.SaveChanges();
             await _reservationRepo.SaveChanges();
+
             _logger.LogInformation("=== [ExpireAndHoldJob] Cycle completed ===");
         }
     }

@@ -23,6 +23,22 @@ namespace Infrastructure.Persistance.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Battery>> GetIncomingCandidates(int batteryModelId)
+        {
+            return await _context.Batteries
+                .Include(b => b.BatteryModel)
+                .Where(b =>
+                    b.Status == BatteryStatus.InUse &&
+                    b.BatteryModelId == batteryModelId
+                )
+                .ToListAsync();
+        }
+
+        public async Task SaveChanges()
+        {
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<Battery?> GetById(int id)
             => await _context.Batteries.Include(x => x.BatteryModel).FirstOrDefaultAsync(b => b.BatteryId == id);
 

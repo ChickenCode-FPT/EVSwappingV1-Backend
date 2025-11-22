@@ -21,6 +21,13 @@ namespace EVSwapping.Controllers
             return Ok(result);
         }
 
+        [HttpGet("incoming-candidates")]
+        public async Task<IActionResult> GetIncomingList([FromQuery] int batteryModelId)
+        {
+            var result = await _batteryService.GetIncomingCandidates(batteryModelId);
+            return Ok(result);
+        }
+
         [HttpGet("users/{userId}/batteries/inuse")]
         public async Task<IActionResult> GetIncomingInUse(string userId)
         {

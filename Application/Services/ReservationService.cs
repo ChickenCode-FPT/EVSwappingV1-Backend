@@ -177,7 +177,8 @@ namespace Application.Services
                 {
                     UserId = userId,
                     ReservationId = reservation.ReservationId,
-                    Type = PaymentType.ReservationDeposit,
+                    //Type = PaymentType.ReservationDeposit,
+                    Type = PaymentType.SwapFee, 
                     Amount = batteryModel.ReservationDepositFee,
                     Currency = "VND",
                     Description = $"Deposit for reservation #{reservation.ReservationId}",

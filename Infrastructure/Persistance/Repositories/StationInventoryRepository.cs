@@ -22,6 +22,16 @@ namespace Infrastructure.Persistance.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<StationInventory?> GetEmptySlot(int stationId)
+        {
+            return await _context.StationInventories
+                .Where(i =>
+                    i.StationId == stationId &&
+                    i.Status == StationInventoryStatus.Empty)
+                .OrderBy(i => i.SlotNumber)     
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<StationInventory?> GetInventory(int stationId, CancellationToken ct)
         {
             return await _context.StationInventories
@@ -256,9 +266,9 @@ namespace Infrastructure.Persistance.Repositories
                 .Include(i => i.Battery).ThenInclude(b => b.BatteryModel)
                 .Where(i =>
                     i.StationId == stationId &&
-                    i.Status == BatteryStatus.Full &&                // inventory full
-                    i.Battery.Status == BatteryStatus.Full &&        // battery full
-                    i.ReservationId == null                          // không bị giữ
+                    i.Status == StationInventoryStatus.Full &&  
+                    i.Battery.Status == BatteryStatus.Full &&   
+                    i.ReservationId == null                     
                 );
 
             if (batteryModelId.HasValue)
